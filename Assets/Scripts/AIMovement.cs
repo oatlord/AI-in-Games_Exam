@@ -1,37 +1,64 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+
 
 public class AIMovement : MonoBehaviour
 {
-    private GameObject player;
+    // public int maxHealth = 100;
+    // public int curHealth;
+    // public int panicMultiplier = 1;
 
-    private Ray floorRay;
-    private Ray pathRay;
-    // Start is called before the first frame update
-    void Start()
+    public Node currentNode;
+    public List<Node> path = new List<Node>();
+
+    public enum StateMachine
     {
-        player = GameObject.FindGameObjectWithTag("Player");
+        // Patrol,
+        Engage
+        // Evade
     }
 
-    // Update is called once per frame
-    void Update()
+    public StateMachine currentState;
+
+    public GameObject player;
+
+    public float speed = 3f;
+
+    private void Start()
     {
-        Vector3 rayOriginLocal = new Vector3(0, 0, 4); // offset 2 units forward in local space
-        Vector3 rayOriginWorld = transform.TransformPoint(rayOriginLocal);
-        floorRay = new Ray(rayOriginWorld, -Vector3.up * 3); // direction stays world-down
-        pathRay = new Ray(transform.position, gameObject.transform.forward * 3);
+        // curHealth = maxHealth;
     }
 
-    private void OnDrawGizmos()
+    private void Update()
     {
-        // Raycast for floor check to get hit block below player
-        Vector3 rayOriginLocal = new Vector3(0, 0, 4); // offset 2 unit forward in local space
-        Vector3 rayOriginWorld = transform.TransformPoint(rayOriginLocal);
+        currentState = StateMachine.Engage;
+        Engage();
+        CreatePath();
+        Debug.Log("Distance from Player to AI: " + Vector3.Distance(transform.position, player.transform.position));
+    }
 
-        Gizmos.color = Color.red;
-        Gizmos.DrawRay(rayOriginWorld, -Vector3.up * 3);
+    void Engage()
+    {
+        if (path.Count == 0)
+        {
+            path = AStarManager.instance.GeneratePath(currentNode, AStarManager.instance.FindNearestNode(player.transform.position));
+        }
+    }
 
-        // Raycast for forward direction, checking if path is clear
-        Gizmos.color = Color.blue;
-        Gizmos.DrawRay(transform.position, transform.forward * 3);
+    public void CreatePath()
+    {
+        if (path.Count > 0)
+        {
+            int x = 0;
+            transform.position = Vector3.MoveTowards(transform.position, new Vector3(path[x].transform.position.x, path[x].transform.position.y, path[x].transform.position.z), speed * Time.deltaTime);
+
+            if (Vector2.Distance(transform.position, path[x].transform.position) < 0.1f)
+            {
+                currentNode = path[x];
+                path.RemoveAt(x);
+            }
+        }
     }
 }
