@@ -4,9 +4,14 @@ using UnityEngine;
 
 public class Node : MonoBehaviour
 {
+    // public Node cameFrom;
+    // public List<Node> connections;
+
+    // public float gScore;
+    // public float hScore;
+
     public Node cameFrom;
     public List<Node> connections;
-
     public float gScore;
     public float hScore;
 
@@ -19,7 +24,7 @@ public class Node : MonoBehaviour
     {
         if(connections.Count > 0)
         {
-            Gizmos.color = Color.blue;
+            Gizmos.color = Color.yellow;
             for(int i = 0; i < connections.Count; i++)
             {
                 Gizmos.DrawLine(transform.position, connections[i].transform.position);
