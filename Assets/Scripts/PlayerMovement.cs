@@ -9,6 +9,7 @@ public class PlayerMovement : MonoBehaviour
     public float speed = 3.0f;
     public float rotationSpeed = 180f; // degrees per second
     public LayerMask groundMask;
+    public bool moveFinished = false;
 
     private InputSystem_Actions inputActions;
 
@@ -18,6 +19,7 @@ public class PlayerMovement : MonoBehaviour
     private Quaternion targetRotation;
 
     private Coroutine moveAndRotateCoroutine;
+    public TurnManager turnManager;
     // Start is called before the first frame update
 
     void Awake()
@@ -43,6 +45,11 @@ public class PlayerMovement : MonoBehaviour
         inputActions.Player.MoveDown.performed += OnMoveDown;
         inputActions.Player.MoveLeft.performed += OnMoveLeft;
         inputActions.Player.MoveRight.performed += OnMoveRight;
+
+        if (turnManager == null)
+        {
+            turnManager = FindObjectOfType<TurnManager>();
+        }
     }
 
     // Update is called once per frame
@@ -52,12 +59,15 @@ public class PlayerMovement : MonoBehaviour
         Vector3 rayOriginWorld = transform.TransformPoint(rayOriginLocal);
         floorRay = new Ray(rayOriginWorld, -Vector3.up * 3); // direction stays world-down
         pathRay = new Ray(transform.position, gameObject.transform.forward * 3);
+
+        Debug.Log("Move finished: " + moveFinished);
     }
 
     void OnMoveUp(InputAction.CallbackContext callbackContext)
     {
         if (callbackContext.performed)
         {
+            if (turnManager != null && !turnManager.InputEnabled) return;
             Debug.Log("Move performed");
             targetRotation = Quaternion.Euler(0, 0, 0);
 
@@ -74,6 +84,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (callbackContext.performed)
         {
+            if (turnManager != null && !turnManager.InputEnabled) return;
             Debug.Log("Move performed");
             targetRotation = Quaternion.Euler(0, 180, 0);
 
@@ -90,6 +101,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (callbackContext.performed)
         {
+            if (turnManager != null && !turnManager.InputEnabled) return;
             Debug.Log("Move performed");
             targetRotation = Quaternion.Euler(0, -90, 0);
 
@@ -106,6 +118,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (callbackContext.performed)
         {
+            if (turnManager != null && !turnManager.InputEnabled) return;
             Debug.Log("Move performed");
             targetRotation = Quaternion.Euler(0, 90, 0);
 
@@ -139,6 +152,8 @@ public class PlayerMovement : MonoBehaviour
 
     IEnumerator MovePlayerCoroutine()
     {
+        moveFinished = false;
+        
         while (Quaternion.Angle(transform.rotation, targetRotation) > 0.1f)
         {
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
@@ -153,6 +168,20 @@ public class PlayerMovement : MonoBehaviour
         }
         
         transform.position = nextBlock;
+
+        yield return new WaitUntil(() => transform.rotation == targetRotation && transform.position == nextBlock);
+        moveFinished = true;
+
+        // notify TurnManager that the player finished their move
+        if (turnManager != null)
+        {
+            turnManager.EndPlayerTurn();
+        }
+    }
+
+    public bool GetMoveFinished()
+    {
+        return moveFinished;
     }
 
     private void OnDrawGizmos()
