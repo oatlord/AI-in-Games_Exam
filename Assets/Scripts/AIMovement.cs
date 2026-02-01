@@ -13,6 +13,7 @@ public class AIMovement : MonoBehaviour
     public Node currentNode;
     public List<Node> path = new List<Node>();
 
+
     public enum StateMachine
     {
         // Patrol,
@@ -28,10 +29,10 @@ public class AIMovement : MonoBehaviour
     // limit how many path nodes the AI will traverse per TurnManager-triggered turn
     public int maxStepsPerTurn = 2;
 
-    private void Start()
+    void Start()
     {
-        // curHealth = maxHealth;
     }
+
 
     private void Update()
     {
@@ -65,70 +66,39 @@ public class AIMovement : MonoBehaviour
     // Called by TurnManager to perform the enemy's turn as a coroutine
     public IEnumerator TakeTurn()
     {
-        int stepsTaken = 0;
-
-        // ensure we have a valid start node
         if (currentNode == null)
-        {
             currentNode = AStarManager.instance.FindNearestNode(transform.position);
-            Debug.Log("AIMovement: currentNode was null, set to nearest node: " + (currentNode != null ? currentNode.name : "null"));
-        }
 
-        Debug.Log("AIMovement.TakeTurn start. currentNode=" + (currentNode!=null?currentNode.name:"null") + ", player=" + (player!=null?player.name:"null"));
+        Node playerNode = AStarManager.instance.FindNearestNode(player.transform.position);
 
-        // Take up to maxStepsPerTurn steps; recompute path each step so AI reacts to player
-        while (stepsTaken < maxStepsPerTurn)
+        // Compute path ONCE per turn
+        List<Node> path = AStarManager.instance.GeneratePath(currentNode, playerNode);
+
+        if (path == null || path.Count <= 1)
+            yield break;
+
+        int steps = Mathf.Min(maxStepsPerTurn, path.Count - 1);
+
+        for (int i = 1; i <= steps; i++)
         {
-            path = AStarManager.instance.GeneratePath(currentNode, AStarManager.instance.FindNearestNode(player.transform.position));
+            Node nextNode = path[i];
+            Vector3 targetPos = nextNode.transform.position + Vector3.up;
 
-            if (path == null || path.Count == 0)
+            while (Vector3.Distance(transform.position, targetPos) > 0.01f)
             {
-                Debug.Log("AIMovement: no path to player or already adjacent. stepsTaken=" + stepsTaken);
-                break;
-            }
-
-            // remove any leading nodes that are the same as our current node (path may include start)
-            while (path.Count > 0 && path[0] == currentNode)
-            {
-                path.RemoveAt(0);
-            }
-
-            if (path.Count == 0)
-            {
-                Debug.Log("AIMovement: path cleared after removing currentNode. stepsTaken=" + stepsTaken);
-                break;
-            }
-
-            Node next = path[0];
-            Vector3 target = next.transform.position;
-
-            float distBefore = Vector3.Distance(transform.position, target);
-            if (distBefore <= 0.01f)
-            {
-                // already at the next node; consume it but don't count as a moved step
-                currentNode = next;
-                path.RemoveAt(0);
-                Debug.Log("AIMovement: next node equals current position; consuming without counting. currentNode=" + (currentNode!=null?currentNode.name:"null"));
-                // continue to try to reach maxStepsPerTurn (but don't increment stepsTaken)
-                continue;
-            }
-
-            while (Vector3.Distance(transform.position, target) > 0.01f)
-            {
-                transform.position = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime);
+                transform.position = Vector3.MoveTowards(
+                    transform.position,
+                    targetPos,
+                    speed * Time.deltaTime
+                );
                 yield return null;
             }
 
-            currentNode = next;
-            path.RemoveAt(0);
-            stepsTaken++;
-            Debug.Log("AIMovement: completed step " + stepsTaken + "/" + maxStepsPerTurn + ", currentNode=" + (currentNode!=null?currentNode.name:"null"));
+            transform.position = targetPos;
+            currentNode = nextNode;
 
-            // small yield to allow other systems to update between steps
             yield return null;
         }
-
-        Debug.Log("AIMovement.TakeTurn end. stepsTaken=" + stepsTaken);
-        yield break;
     }
+
 }

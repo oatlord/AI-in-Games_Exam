@@ -2,278 +2,98 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// [RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
 {
-    // private CharacterController controller;
-    public float speed = 3.0f;
-    public float rotationSpeed = 180f; // degrees per second
+    public float moveSpeed = 5f;
+    public float rotationSpeed = 720f;
+    public float tileSize = 1f;
+
     public LayerMask groundMask;
     public LayerMask barrierMask;
-    public bool moveFinished = false;
 
-    private InputSystem_Actions inputActions;
-
-    private Ray floorRay;
-    private Vector3 rayOriginLocal;
-    private Vector3 rayOriginWorld;
-
-    private Quaternion targetRotation;
-
-    private Coroutine moveAndRotateCoroutine;
     public TurnManager turnManager;
-    // Start is called before the first frame update
+
+    private InputSystem_Actions input;
+    private Coroutine moveCoroutine;
+    private bool isMoving;
 
     void Awake()
     {
-        inputActions = new InputSystem_Actions();
-        inputActions.Player.Enable();
+        input = new InputSystem_Actions();
     }
 
     void OnEnable()
     {
-        inputActions.Player.Enable();
+        input.Player.Enable();
+
+        input.Player.MoveUp.performed += _ => TryMove(Vector3.forward, 0);
+        input.Player.MoveRight.performed += _ => TryMove(Vector3.right, 90);
+        input.Player.MoveLeft.performed += _ => TryMove(Vector3.left, -90);
+        input.Player.MoveDown.performed += _ => TryMove(Vector3.back, 180);
     }
 
     void OnDisable()
     {
-        inputActions.Player.Disable();
+        input.Player.Disable();
     }
 
-    void Start()
-    {
-        targetRotation = transform.rotation;
-        inputActions.Player.MoveUp.performed += OnMoveUp;
-        inputActions.Player.MoveDown.performed += OnMoveDown;
-        inputActions.Player.MoveLeft.performed += OnMoveLeft;
-        inputActions.Player.MoveRight.performed += OnMoveRight;
+    // ===============================
+    // CORE LOGIC
+    // ===============================
 
-        if (turnManager == null)
+    void TryMove(Vector3 dir, float yRotation)
+    {
+        if (isMoving) return;
+        if (turnManager && !turnManager.InputEnabled) return;
+
+        Vector3 targetPos = transform.position + dir * tileSize;
+
+        // Barrier check
+        if (Physics.Raycast(transform.position, dir, tileSize, barrierMask))
+            return;
+
+        // Ground check
+        if (!Physics.Raycast(targetPos + Vector3.up, Vector3.down, 2f, groundMask))
+            return;
+
+        if (moveCoroutine != null)
+            StopCoroutine(moveCoroutine);
+
+        moveCoroutine = StartCoroutine(MoveRoutine(targetPos, yRotation));
+    }
+
+    IEnumerator MoveRoutine(Vector3 targetPos, float yRotation)
+    {
+        isMoving = true;
+
+        Quaternion targetRot = Quaternion.Euler(0, yRotation, 0);
+
+        // Rotate
+        while (Quaternion.Angle(transform.rotation, targetRot) > 0.1f)
         {
-            turnManager = FindObjectOfType<TurnManager>();
-        }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        rayOriginLocal = new Vector3(0, 0, 2); // offset 2 units forward in local space
-        rayOriginWorld = transform.TransformPoint(rayOriginLocal);
-        floorRay = new Ray(rayOriginWorld, -Vector3.up * 3); // direction stays world-down
-        // pathRay = new Ray(transform.position, gameObject.transform.forward * 3);
-
-        Debug.Log("Move finished: " + moveFinished);
-    }
-
-    void OnMoveUp(InputAction.CallbackContext callbackContext)
-    {
-        if (callbackContext.performed)
-        {
-            if (turnManager != null && !turnManager.InputEnabled) return;
-            Debug.Log("Move performed");
-            targetRotation = Quaternion.Euler(0, 0, 0);
-
-            Ray moveCheckRay = new Ray(transform.position, Vector3.forward * 3);
-            if (Physics.Raycast(moveCheckRay, barrierMask))
-            {
-                Debug.Log("Barrier ahead - move blocked");
-                return;
-            }
-
-            rayOriginLocal = new Vector3(0, 0, 2);
-            rayOriginWorld = transform.TransformPoint(rayOriginLocal);
-            Ray nextBlockCheckRay = new Ray(rayOriginWorld, -Vector3.up * 3);
-            if (!Physics.Raycast(nextBlockCheckRay, groundMask))
-            {
-                Debug.Log("No next block - move blocked");
-                return;
-            }
-
-            if (moveAndRotateCoroutine == null)
-            {
-                moveAndRotateCoroutine = StartCoroutine(MovePlayerCoroutine());
-            }
-            else if (moveAndRotateCoroutine != null)
-            {
-                StopCoroutine(moveAndRotateCoroutine);
-                moveAndRotateCoroutine = StartCoroutine(MovePlayerCoroutine());
-            }
-        }
-    }
-
-    void OnMoveDown(InputAction.CallbackContext callbackContext)
-    {
-        if (callbackContext.performed)
-        {
-            if (turnManager != null && !turnManager.InputEnabled) return;
-            Debug.Log("Move performed");
-            targetRotation = Quaternion.Euler(0, 180, 0);
-
-            Ray moveCheckRay = new Ray(transform.position, Vector3.back * 3);
-            if (Physics.Raycast(moveCheckRay, barrierMask))
-            {
-                Debug.Log("Barrier ahead - move blocked");
-                return;
-            }
-
-            rayOriginLocal = new Vector3(0, 0, -2);
-            rayOriginWorld = transform.TransformPoint(rayOriginLocal);
-            Ray nextBlockCheckRay = new Ray(rayOriginWorld, -Vector3.up * 3);
-            if (!Physics.Raycast(nextBlockCheckRay, groundMask))
-            {
-                Debug.Log("No next block - move blocked");
-                return;
-            }
-
-            if (moveAndRotateCoroutine == null)
-            {
-                moveAndRotateCoroutine = StartCoroutine(MovePlayerCoroutine());
-            }
-            else if (moveAndRotateCoroutine != null)
-            {
-                StopCoroutine(moveAndRotateCoroutine);
-                moveAndRotateCoroutine = StartCoroutine(MovePlayerCoroutine());
-            }
-        }
-    }
-
-    void OnMoveLeft(InputAction.CallbackContext callbackContext)
-    {
-        if (callbackContext.performed)
-        {
-            if (turnManager != null && !turnManager.InputEnabled) return;
-            Debug.Log("Move performed");
-            targetRotation = Quaternion.Euler(0, -90, 0);
-
-            Ray moveCheckRay = new Ray(transform.position, Vector3.left * 3);
-            if (Physics.Raycast(moveCheckRay, barrierMask))
-            {
-                Debug.Log("Barrier ahead - move blocked");
-                return;
-            }
-
-            rayOriginLocal = new Vector3(-2, 0, 0);
-            rayOriginWorld = transform.TransformPoint(rayOriginLocal);
-            Ray nextBlockCheckRay = new Ray(rayOriginWorld, -Vector3.up * 3);
-            Debug.DrawRay(rayOriginWorld, -Vector3.up * 3);
-            if (!Physics.Raycast(nextBlockCheckRay, groundMask))
-            {
-                Debug.Log("No next block - move blocked");
-                return;
-            }
-
-            if (moveAndRotateCoroutine == null)
-            {
-                moveAndRotateCoroutine = StartCoroutine(MovePlayerCoroutine());
-            }
-            else if (moveAndRotateCoroutine != null)
-            {
-                StopCoroutine(moveAndRotateCoroutine);
-                moveAndRotateCoroutine = StartCoroutine(MovePlayerCoroutine());
-            }
-        }
-    }
-
-    void OnMoveRight(InputAction.CallbackContext callbackContext)
-    {
-        if (callbackContext.performed)
-        {
-            if (turnManager != null && !turnManager.InputEnabled) return;
-            Debug.Log("Move performed");
-            targetRotation = Quaternion.Euler(0, 90, 0);
-
-            Ray moveCheckRay = new Ray(transform.position, Vector3.right * 3);
-            if (Physics.Raycast(moveCheckRay, barrierMask))
-            {
-                Debug.Log("Barrier ahead - move blocked");
-                return;
-            }
-
-            rayOriginLocal = new Vector3(2, 0, 0);
-            rayOriginWorld = transform.TransformPoint(rayOriginLocal);
-            Ray nextBlockCheckRay = new Ray(rayOriginWorld, -Vector3.up * 3);
-            if (!Physics.Raycast(nextBlockCheckRay, groundMask))
-            {
-                Debug.Log("No next block - move blocked");
-                return;
-            }
-
-            if (moveAndRotateCoroutine == null)
-            {
-                moveAndRotateCoroutine = StartCoroutine(MovePlayerCoroutine());
-            }
-            else if (moveAndRotateCoroutine != null)
-            {
-                StopCoroutine(moveAndRotateCoroutine);
-                moveAndRotateCoroutine = StartCoroutine(MovePlayerCoroutine());
-            }
-        }
-    }
-
-    void Move(Vector3 newPosition)
-    {
-        transform.position = Vector3.MoveTowards(transform.position, newPosition, newPosition.magnitude * speed * Time.deltaTime);
-    }
-
-    public Vector3 GetNextBlock()
-    {
-        if (Physics.Raycast(floorRay, out RaycastHit hit, groundMask))
-        {
-            Debug.Log("Floor Hit: " + hit.collider.name);
-            Vector3 newPosition = new Vector3(hit.transform.position.x, hit.transform.position.y + 1, hit.transform.position.z);
-            return newPosition;
-        }
-        else
-        {
-            return transform.position;
-        }
-    }
-
-    IEnumerator MovePlayerCoroutine()
-    {
-        moveFinished = false;
-
-        while (Quaternion.Angle(transform.rotation, targetRotation) > 0.1f)
-        {
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+            transform.rotation = Quaternion.RotateTowards(
+                transform.rotation,
+                targetRot,
+                rotationSpeed * Time.deltaTime
+            );
             yield return null;
         }
 
-        Vector3 nextBlock = GetNextBlock();
-        while (Vector3.Distance(transform.position, nextBlock) > 0.01f)
+        // Move 1 TILE
+        while (Vector3.Distance(transform.position, targetPos) > 0.01f)
         {
-            Move(nextBlock);
+            transform.position = Vector3.MoveTowards(
+                transform.position,
+                targetPos,
+                moveSpeed * Time.deltaTime
+            );
             yield return null;
         }
 
-        transform.position = nextBlock;
+        transform.position = targetPos;
+        isMoving = false;
 
-        yield return new WaitUntil(() => transform.rotation == targetRotation && transform.position == nextBlock);
-        moveFinished = true;
-
-        // notify TurnManager that the player finished their move
-        if (turnManager != null)
-        {
+        if (turnManager)
             turnManager.EndPlayerTurn();
-        }
-    }
-
-    public bool GetMoveFinished()
-    {
-        return moveFinished;
-    }
-
-    private void OnDrawGizmos()
-    {
-        // Raycast for floor check to get hit block below player
-        Vector3 rayOriginLocal = new Vector3(0, 0, 2); // offset 2 unit forward in local space
-        Vector3 rayOriginWorld = transform.TransformPoint(rayOriginLocal);
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawRay(rayOriginWorld, -Vector3.up * 3);
-
-        // Raycast for forward direction, checking if path is clear
-        Gizmos.color = Color.blue;
-        Gizmos.DrawRay(transform.position, transform.forward * 3);
     }
 }
