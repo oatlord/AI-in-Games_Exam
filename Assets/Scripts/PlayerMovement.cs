@@ -80,14 +80,14 @@ public class PlayerMovement : MonoBehaviour
                 return;
             }
 
-            rayOriginLocal = new Vector3(0, 0, 2);
-            rayOriginWorld = transform.TransformPoint(rayOriginLocal);
-            Ray nextBlockCheckRay = new Ray(rayOriginWorld, -Vector3.up * 3);
-            if (!Physics.Raycast(nextBlockCheckRay, groundMask))
-            {
-                Debug.Log("No next block - move blocked");
-                return;
-            }
+            // rayOriginLocal = new Vector3(0, 0, 2);
+            // rayOriginWorld = transform.TransformPoint(rayOriginLocal);
+            // Ray nextBlockCheckRay = new Ray(rayOriginWorld, -Vector3.up * 3);
+            // if (!Physics.Raycast(nextBlockCheckRay, groundMask))
+            // {
+            //     Debug.Log("No next block - move blocked");
+            //     return;
+            // }
 
             if (moveAndRotateCoroutine == null)
             {
@@ -116,14 +116,14 @@ public class PlayerMovement : MonoBehaviour
                 return;
             }
 
-            rayOriginLocal = new Vector3(0, 0, -2);
-            rayOriginWorld = transform.TransformPoint(rayOriginLocal);
-            Ray nextBlockCheckRay = new Ray(rayOriginWorld, -Vector3.up * 3);
-            if (!Physics.Raycast(nextBlockCheckRay, groundMask))
-            {
-                Debug.Log("No next block - move blocked");
-                return;
-            }
+            // rayOriginLocal = new Vector3(0, 0, -2);
+            // rayOriginWorld = transform.TransformPoint(rayOriginLocal);
+            // Ray nextBlockCheckRay = new Ray(rayOriginWorld, -Vector3.up * 3);
+            // if (!Physics.Raycast(nextBlockCheckRay, groundMask))
+            // {
+            //     Debug.Log("No next block - move blocked");
+            //     return;
+            // }
 
             if (moveAndRotateCoroutine == null)
             {
@@ -152,15 +152,15 @@ public class PlayerMovement : MonoBehaviour
                 return;
             }
 
-            rayOriginLocal = new Vector3(-2, 0, 0);
-            rayOriginWorld = transform.TransformPoint(rayOriginLocal);
-            Ray nextBlockCheckRay = new Ray(rayOriginWorld, -Vector3.up * 3);
-            Debug.DrawRay(rayOriginWorld, -Vector3.up * 3);
-            if (!Physics.Raycast(nextBlockCheckRay, groundMask))
-            {
-                Debug.Log("No next block - move blocked");
-                return;
-            }
+            // rayOriginLocal = new Vector3(-2, 0, 0);
+            // rayOriginWorld = transform.TransformPoint(rayOriginLocal);
+            // Ray nextBlockCheckRay = new Ray(rayOriginWorld, -Vector3.up * 3);
+            // Debug.DrawRay(rayOriginWorld, -Vector3.up * 3);
+            // if (!Physics.Raycast(nextBlockCheckRay, groundMask))
+            // {
+            //     Debug.Log("No next block - move blocked");
+            //     return;
+            // }
 
             if (moveAndRotateCoroutine == null)
             {
@@ -186,15 +186,6 @@ public class PlayerMovement : MonoBehaviour
             if (Physics.Raycast(moveCheckRay, barrierMask))
             {
                 Debug.Log("Barrier ahead - move blocked");
-                return;
-            }
-
-            rayOriginLocal = new Vector3(2, 0, 0);
-            rayOriginWorld = transform.TransformPoint(rayOriginLocal);
-            Ray nextBlockCheckRay = new Ray(rayOriginWorld, -Vector3.up * 3);
-            if (!Physics.Raycast(nextBlockCheckRay, groundMask))
-            {
-                Debug.Log("No next block - move blocked");
                 return;
             }
 
@@ -237,6 +228,15 @@ public class PlayerMovement : MonoBehaviour
         {
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
             yield return null;
+        }
+
+        // rayOriginLocal = new Vector3(2, 0, 0);
+        //     rayOriginWorld = transform.TransformPoint(rayOriginLocal);
+        //     Ray nextBlockCheckRay = new Ray(rayOriginWorld, -Vector3.up * 3);
+        if (!Physics.Raycast(floorRay, groundMask))
+        {
+            Debug.Log("No next block - move blocked");
+            yield break;
         }
 
         Vector3 nextBlock = GetNextBlock();
