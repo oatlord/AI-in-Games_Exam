@@ -2,9 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerWinCheck : MonoBehaviour
+public class PlayerPositionCheck : MonoBehaviour
 {
     private Ray checkPositionRay;
+    private Transform currentTile;
     public float rayLength = 3;
     public LayerMask groundLayer;
 
@@ -15,11 +16,19 @@ public class PlayerWinCheck : MonoBehaviour
 
         if (Physics.Raycast(checkPositionRay, out RaycastHit hit, groundLayer))
         {
+            currentTile = hit.transform;
+            Debug.Log("Player Tile: " + currentTile);
+
             if (hit.transform.CompareTag("WinTile"))
             {
                 Debug.Log("Yay we won");
             }
         }
+    }
+
+    public Transform GetCurrentTile()
+    {
+        return currentTile;
     }
 
     void OnDrawGizmos()
