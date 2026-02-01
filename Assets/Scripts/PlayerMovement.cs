@@ -9,12 +9,14 @@ public class PlayerMovement : MonoBehaviour
     public float speed = 3.0f;
     public float rotationSpeed = 180f; // degrees per second
     public LayerMask groundMask;
+    public LayerMask barrierMask;
     public bool moveFinished = false;
 
     private InputSystem_Actions inputActions;
 
     private Ray floorRay;
-    private Ray pathRay;                                
+    private Vector3 rayOriginLocal;
+    private Vector3 rayOriginWorld;
 
     private Quaternion targetRotation;
 
@@ -55,10 +57,10 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector3 rayOriginLocal = new Vector3(0, 0, 2); // offset 2 units forward in local space
-        Vector3 rayOriginWorld = transform.TransformPoint(rayOriginLocal);
+        rayOriginLocal = new Vector3(0, 0, 2); // offset 2 units forward in local space
+        rayOriginWorld = transform.TransformPoint(rayOriginLocal);
         floorRay = new Ray(rayOriginWorld, -Vector3.up * 3); // direction stays world-down
-        pathRay = new Ray(transform.position, gameObject.transform.forward * 3);
+        // pathRay = new Ray(transform.position, gameObject.transform.forward * 3);
 
         Debug.Log("Move finished: " + moveFinished);
     }
@@ -71,9 +73,28 @@ public class PlayerMovement : MonoBehaviour
             Debug.Log("Move performed");
             targetRotation = Quaternion.Euler(0, 0, 0);
 
-            if (moveAndRotateCoroutine == null) {
+            Ray moveCheckRay = new Ray(transform.position, Vector3.forward * 3);
+            if (Physics.Raycast(moveCheckRay, barrierMask))
+            {
+                Debug.Log("Barrier ahead - move blocked");
+                return;
+            }
+
+            rayOriginLocal = new Vector3(0, 0, 2);
+            rayOriginWorld = transform.TransformPoint(rayOriginLocal);
+            Ray nextBlockCheckRay = new Ray(rayOriginWorld, -Vector3.up * 3);
+            if (!Physics.Raycast(nextBlockCheckRay, groundMask))
+            {
+                Debug.Log("No next block - move blocked");
+                return;
+            }
+
+            if (moveAndRotateCoroutine == null)
+            {
                 moveAndRotateCoroutine = StartCoroutine(MovePlayerCoroutine());
-            } else if (moveAndRotateCoroutine != null) {
+            }
+            else if (moveAndRotateCoroutine != null)
+            {
                 StopCoroutine(moveAndRotateCoroutine);
                 moveAndRotateCoroutine = StartCoroutine(MovePlayerCoroutine());
             }
@@ -88,9 +109,28 @@ public class PlayerMovement : MonoBehaviour
             Debug.Log("Move performed");
             targetRotation = Quaternion.Euler(0, 180, 0);
 
-            if (moveAndRotateCoroutine == null) {
+            Ray moveCheckRay = new Ray(transform.position, Vector3.back * 3);
+            if (Physics.Raycast(moveCheckRay, barrierMask))
+            {
+                Debug.Log("Barrier ahead - move blocked");
+                return;
+            }
+
+            rayOriginLocal = new Vector3(0, 0, -2);
+            rayOriginWorld = transform.TransformPoint(rayOriginLocal);
+            Ray nextBlockCheckRay = new Ray(rayOriginWorld, -Vector3.up * 3);
+            if (!Physics.Raycast(nextBlockCheckRay, groundMask))
+            {
+                Debug.Log("No next block - move blocked");
+                return;
+            }
+
+            if (moveAndRotateCoroutine == null)
+            {
                 moveAndRotateCoroutine = StartCoroutine(MovePlayerCoroutine());
-            } else if (moveAndRotateCoroutine != null) {
+            }
+            else if (moveAndRotateCoroutine != null)
+            {
                 StopCoroutine(moveAndRotateCoroutine);
                 moveAndRotateCoroutine = StartCoroutine(MovePlayerCoroutine());
             }
@@ -105,9 +145,29 @@ public class PlayerMovement : MonoBehaviour
             Debug.Log("Move performed");
             targetRotation = Quaternion.Euler(0, -90, 0);
 
-            if (moveAndRotateCoroutine == null) {
+            Ray moveCheckRay = new Ray(transform.position, Vector3.left * 3);
+            if (Physics.Raycast(moveCheckRay, barrierMask))
+            {
+                Debug.Log("Barrier ahead - move blocked");
+                return;
+            }
+
+            rayOriginLocal = new Vector3(-2, 0, 0);
+            rayOriginWorld = transform.TransformPoint(rayOriginLocal);
+            Ray nextBlockCheckRay = new Ray(rayOriginWorld, -Vector3.up * 3);
+            Debug.DrawRay(rayOriginWorld, -Vector3.up * 3);
+            if (!Physics.Raycast(nextBlockCheckRay, groundMask))
+            {
+                Debug.Log("No next block - move blocked");
+                return;
+            }
+
+            if (moveAndRotateCoroutine == null)
+            {
                 moveAndRotateCoroutine = StartCoroutine(MovePlayerCoroutine());
-            } else if (moveAndRotateCoroutine != null) {
+            }
+            else if (moveAndRotateCoroutine != null)
+            {
                 StopCoroutine(moveAndRotateCoroutine);
                 moveAndRotateCoroutine = StartCoroutine(MovePlayerCoroutine());
             }
@@ -122,9 +182,28 @@ public class PlayerMovement : MonoBehaviour
             Debug.Log("Move performed");
             targetRotation = Quaternion.Euler(0, 90, 0);
 
-            if (moveAndRotateCoroutine == null) {
+            Ray moveCheckRay = new Ray(transform.position, Vector3.right * 3);
+            if (Physics.Raycast(moveCheckRay, barrierMask))
+            {
+                Debug.Log("Barrier ahead - move blocked");
+                return;
+            }
+
+            rayOriginLocal = new Vector3(2, 0, 0);
+            rayOriginWorld = transform.TransformPoint(rayOriginLocal);
+            Ray nextBlockCheckRay = new Ray(rayOriginWorld, -Vector3.up * 3);
+            if (!Physics.Raycast(nextBlockCheckRay, groundMask))
+            {
+                Debug.Log("No next block - move blocked");
+                return;
+            }
+
+            if (moveAndRotateCoroutine == null)
+            {
                 moveAndRotateCoroutine = StartCoroutine(MovePlayerCoroutine());
-            } else if (moveAndRotateCoroutine != null) {
+            }
+            else if (moveAndRotateCoroutine != null)
+            {
                 StopCoroutine(moveAndRotateCoroutine);
                 moveAndRotateCoroutine = StartCoroutine(MovePlayerCoroutine());
             }
@@ -153,20 +232,20 @@ public class PlayerMovement : MonoBehaviour
     IEnumerator MovePlayerCoroutine()
     {
         moveFinished = false;
-        
+
         while (Quaternion.Angle(transform.rotation, targetRotation) > 0.1f)
         {
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
             yield return null;
         }
-        
+
         Vector3 nextBlock = GetNextBlock();
         while (Vector3.Distance(transform.position, nextBlock) > 0.01f)
         {
             Move(nextBlock);
             yield return null;
         }
-        
+
         transform.position = nextBlock;
 
         yield return new WaitUntil(() => transform.rotation == targetRotation && transform.position == nextBlock);
