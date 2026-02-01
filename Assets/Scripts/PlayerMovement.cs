@@ -16,10 +16,17 @@ public class PlayerMovement : MonoBehaviour
     private InputSystem_Actions input;
     private Coroutine moveCoroutine;
     private bool isMoving;
+    public Node currentNode;
+
 
     void Awake()
     {
         input = new InputSystem_Actions();
+    }
+
+    void Start()
+    {
+        currentNode = AStarManager.instance.FindNearestNode(transform.position);
     }
 
     void OnEnable()
@@ -91,6 +98,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         transform.position = targetPos;
+        currentNode = AStarManager.instance.FindNearestNode(transform.position);
         isMoving = false;
 
         if (turnManager)

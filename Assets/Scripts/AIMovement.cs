@@ -28,6 +28,7 @@ public class AIMovement : MonoBehaviour
     public float speed = 3f;
     // limit how many path nodes the AI will traverse per TurnManager-triggered turn
     public int maxStepsPerTurn = 2;
+    public LayerMask barrierMask;
 
     void Start()
     {
@@ -66,38 +67,43 @@ public class AIMovement : MonoBehaviour
     // Called by TurnManager to perform the enemy's turn as a coroutine
     public IEnumerator TakeTurn()
     {
-        if (currentNode == null)
-            currentNode = AStarManager.instance.FindNearestNode(transform.position);
+        if (currentNode == null) yield break;
 
-        Node playerNode = AStarManager.instance.FindNearestNode(player.transform.position);
+        PlayerMovement playerScript = player.GetComponent<PlayerMovement>();
+        if (playerScript == null || playerScript.currentNode == null) yield break;
 
-        // Compute path ONCE per turn
-        List<Node> path = AStarManager.instance.GeneratePath(currentNode, playerNode);
+        Node playerNode = playerScript.currentNode;
+        if (currentNode == playerNode) yield break;
 
-        if (path == null || path.Count <= 1)
-            yield break;
+        path = AStarManager.instance.GeneratePath(currentNode, playerNode);
+        if (path == null || path.Count <= 1) yield break;
 
-        int steps = Mathf.Min(maxStepsPerTurn, path.Count - 1);
-
-        for (int i = 1; i <= steps; i++)
+        int stepsTaken = 0;
+        for (int i = 1; i < path.Count && stepsTaken < maxStepsPerTurn; i++)
         {
             Node nextNode = path[i];
-            Vector3 targetPos = nextNode.transform.position + Vector3.up;
 
-            while (Vector3.Distance(transform.position, targetPos) > 0.01f)
+            Vector3 direction = nextNode.transform.position - currentNode.transform.position;
+            float distance = direction.magnitude;
+
+            if (Physics.Raycast(currentNode.transform.position, direction, distance, barrierMask))
             {
-                transform.position = Vector3.MoveTowards(
-                    transform.position,
-                    targetPos,
-                    speed * Time.deltaTime
-                );
+                Debug.Log("AI hit a wall! Stopping move.");
+                yield break;
+            }
+
+            Vector3 targetPos = nextNode.transform.position; 
+            while (Vector3.Distance(transform.position, targetPos) > 0.05f)
+            {
+                transform.position = Vector3.MoveTowards(transform.position, targetPos, speed * Time.deltaTime);
                 yield return null;
             }
 
             transform.position = targetPos;
             currentNode = nextNode;
+            stepsTaken++;
 
-            yield return null;
+            yield return new WaitForSeconds(0.1f);
         }
     }
 
