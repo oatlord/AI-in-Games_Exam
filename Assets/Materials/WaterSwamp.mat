@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: WaterSwamp
-  m_Shader: {fileID: -6465566751694194690, guid: edda07fbac3b7b941a96109849593194,
+  m_Shader: {fileID: -6465566751694194690, guid: 46ecd7e0513799a4190995d3ab50e72c,
     type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -114,12 +114,14 @@ Material:
     - _FlowSpd: 0.2
     - _FoamDensity: 6
     - _FoamSpd: 0.5
+    - _FoamThick: 2
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
+    - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _Smoothness: 0.5
@@ -128,15 +130,21 @@ Material:
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0
+    - _WaveHeight: 0.5
+    - _WaveSpread: 6
     - _WorkflowMode: 1
     - _ZWrite: 1
     - _foamThick: 3
+    - _maxHEIGHT: 0.5
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Color_1: {r: 0.32050276, g: 0.32549015, b: 0.02745098, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _FlowColor: {r: 0.51572317, g: 0.46333808, b: 0.07622317, a: 0}
     - _FlowDirec: {r: 1, g: 0.5, b: 0, a: 0}
+    - _FlowDirect: {r: 0.5, g: 0.5, b: 0, a: 0}
+    - _FoamColor_1: {r: 0.30196077, g: 0.27808937, b: 0.027450971, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &3417540129361665560

@@ -29,6 +29,9 @@ public class AIMovement : MonoBehaviour
     private Node forbiddenFrom;
     private Node forbiddenTo;
     private Vector3 originalScale;
+    int replanAttempts = 0;
+    int maxReplansPerTurn = 1;
+
 
     void Start()
     {
@@ -73,6 +76,15 @@ public class AIMovement : MonoBehaviour
                 forbiddenFrom = currentNode;
                 forbiddenTo = nextNode;
 
+                replanAttempts++;
+
+                if (replanAttempts >= maxReplansPerTurn)
+                {
+                    // Give up this turn to avoid freezing
+                    FaceTargetCardinal(player.transform.position);
+                    break;
+                }
+
                 path = AStarManager.instance.GeneratePath(
                     currentNode,
                     playerScript.currentNode,
@@ -85,8 +97,10 @@ public class AIMovement : MonoBehaviour
                     FaceTargetCardinal(player.transform.position);
                     break;
                 }
+
                 continue;
             }
+
 
 
             // Rotation
