@@ -68,16 +68,26 @@ public class AIMovement : MonoBehaviour
             Vector3 startLine = currentNode.transform.position + Vector3.up * 0.5f;
             Vector3 endLine = nextNode.transform.position + Vector3.up * 0.5f;
 
-            if (Physics.Linecast(startLine, endLine, out RaycastHit hit, barrierMask))
+            if (Physics.Linecast(startLine, endLine, barrierMask))
             {
-                Debug.Log("<color=orange>AI bumped into a barrier!</color>");
                 forbiddenFrom = currentNode;
                 forbiddenTo = nextNode;
-                
-                // NEW: Cardinal face only
-                FaceTargetCardinal(player.transform.position);
-                break;
+
+                path = AStarManager.instance.GeneratePath(
+                    currentNode,
+                    playerScript.currentNode,
+                    forbiddenFrom,
+                    forbiddenTo
+                );
+
+                if (path == null || path.Count <= 1)
+                {
+                    FaceTargetCardinal(player.transform.position);
+                    break;
+                }
+                continue;
             }
+
 
             // Rotation
             Vector3 moveDir = (nextNode.transform.position - transform.position).normalized;
