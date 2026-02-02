@@ -9,19 +9,26 @@ public class PlayerPositionCheck : MonoBehaviour
     public float rayLength = 3;
     public LayerMask groundLayer;
 
-    // Update is called once per frame
+    private Transform lastTile; // to track the previous tile
+
     void Update()
     {
-        checkPositionRay = new Ray(transform.position, Vector3.down * rayLength);
+        checkPositionRay = new Ray(transform.position, Vector3.down);
 
-        if (Physics.Raycast(checkPositionRay, out RaycastHit hit, groundLayer))
+        if (Physics.Raycast(checkPositionRay, out RaycastHit hit, rayLength, groundLayer))
         {
-            currentTile = hit.transform;
-            Debug.Log("Player Tile: " + currentTile);
-
-            if (hit.transform.CompareTag("WinTile"))
+            // Only log if we moved to a new tile
+            if (hit.transform != lastTile)
             {
-                Debug.Log("Yay we won");
+                currentTile = hit.transform;
+                Debug.Log("Player Tile: " + currentTile);
+
+                if (currentTile.CompareTag("WinTile"))
+                {
+                    Debug.Log("Yay we won");
+                }
+
+                lastTile = currentTile; // update lastTile
             }
         }
     }

@@ -1,110 +1,130 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-
 
 public class AIMovement : MonoBehaviour
 {
-    // public int maxHealth = 100;
-    // public int curHealth;
-    // public int panicMultiplier = 1;
-
     public Node currentNode;
     public List<Node> path = new List<Node>();
-
-
-    public enum StateMachine
-    {
-        // Patrol,
-        Engage
-        // Evade
-    }
-
-    public StateMachine currentState;
 
     public GameObject player;
 
     public float speed = 3f;
-    // limit how many path nodes the AI will traverse per TurnManager-triggered turn
+    public float rotationSpeed = 720f;
     public int maxStepsPerTurn = 2;
     public LayerMask barrierMask;
 
-    void Start()
-    {
-    }
+    private bool isTakingTurn = false;
 
+    // 🔹 OPTION A: memory of last blocked edge
+    private Node forbiddenFrom;
+    private Node forbiddenTo;
 
-    private void Update()
-    {
-        // keep debug info but don't drive movement here — AI actions run via TakeTurn()
-        Debug.Log("Distance from Player to AI: " + Vector3.Distance(transform.position, player.transform.position));
-    }
+public IEnumerator TakeTurn()
+{
+    if (currentNode == null || isTakingTurn || player == null)
+        yield break;
 
-    void Engage()
+    PlayerMovement playerScript = player.GetComponent<PlayerMovement>();
+    if (playerScript == null || playerScript.currentNode == null)
+        yield break;
+
+    isTakingTurn = true;
+
+    // 1. PLAN PHASE: Only plan once at the very start of the turn
+    // This uses knowledge gained from PREVIOUS turns (forbidden edges)
+    path = AStarManager.instance.GeneratePath(
+        currentNode,
+        playerScript.currentNode,
+        forbiddenFrom,
+        forbiddenTo
+    );
+
+    int stepsTaken = 0;
+
+    // 2. MOVE PHASE: Execute the pre-planned path
+    while (stepsTaken < maxStepsPerTurn)
     {
-        if (path.Count == 0)
+        if (path == null || path.Count <= 1)
+            break;
+
+        // We always look at the next node in the ALREADY calculated path
+        Node nextNode = path[1];
+
+        // CHECK: Is there a barrier in the way of our pre-planned step?
+        Vector3 startLine = currentNode.transform.position + Vector3.up * 0.5f;
+        Vector3 endLine = nextNode.transform.position + Vector3.up * 0.5f;
+
+        if (Physics.Linecast(startLine, endLine, out RaycastHit hit, barrierMask))
         {
-            path = AStarManager.instance.GeneratePath(currentNode, AStarManager.instance.FindNearestNode(player.transform.position));
+            Debug.Log("<color=orange>AI bumped into a barrier! Ending turn and remembering for next time.</color>");
+            
+            // Store the "forbidden edge" so the NEXT turn's GeneratePath knows to avoid it
+            forbiddenFrom = currentNode;
+            forbiddenTo = nextNode;
+
+            FaceTarget(player.transform.position);
+            break; // STOP MOVING IMMEDIATELY. Turn ends here.
         }
-    }
 
-    public void CreatePath()
-    {
-        if (path.Count > 0)
+        // --- SUCCESSFUL STEP LOGIC ---
+        // If we made it here, the path for this specific step is clear.
+        
+        // (Optional) Clear memory if the AI successfully moves somewhere else
+        // forbiddenFrom = null; 
+        // forbiddenTo = null;
+
+        // Rotation
+        Vector3 moveDir = (nextNode.transform.position - transform.position).normalized;
+        if (moveDir != Vector3.zero)
         {
-            int x = 0;
-            transform.position = Vector3.MoveTowards(transform.position, new Vector3(path[x].transform.position.x, path[x].transform.position.y, path[x].transform.position.z), speed * Time.deltaTime);
-
-            if (Vector2.Distance(transform.position, path[x].transform.position) < 0.1f)
+            Quaternion targetRot = Quaternion.LookRotation(moveDir);
+            while (Quaternion.Angle(transform.rotation, targetRot) > 5f)
             {
-                currentNode = path[x];
-                path.RemoveAt(x);
-            }
-        }
-    }
-
-    // Called by TurnManager to perform the enemy's turn as a coroutine
-    public IEnumerator TakeTurn()
-    {
-        if (currentNode == null) yield break;
-
-        PlayerMovement playerScript = player.GetComponent<PlayerMovement>();
-        if (playerScript == null || playerScript.currentNode == null) yield break;
-
-        Node playerNode = playerScript.currentNode;
-        if (currentNode == playerNode) yield break;
-
-        path = AStarManager.instance.GeneratePath(currentNode, playerNode);
-        if (path == null || path.Count <= 1) yield break;
-
-        int stepsTaken = 0;
-        for (int i = 1; i < path.Count && stepsTaken < maxStepsPerTurn; i++)
-        {
-            Node nextNode = path[i];
-
-            Vector3 direction = nextNode.transform.position - currentNode.transform.position;
-            float distance = direction.magnitude;
-
-            if (Physics.Raycast(currentNode.transform.position, direction, distance, barrierMask))
-            {
-                Debug.Log("AI hit a wall! Stopping move.");
-                yield break;
-            }
-
-            Vector3 targetPos = nextNode.transform.position; 
-            while (Vector3.Distance(transform.position, targetPos) > 0.05f)
-            {
-                transform.position = Vector3.MoveTowards(transform.position, targetPos, speed * Time.deltaTime);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
                 yield return null;
             }
-
-            transform.position = targetPos;
-            currentNode = nextNode;
-            stepsTaken++;
-
-            yield return new WaitForSeconds(0.1f);
         }
+
+        // Movement
+        Vector3 targetPos = nextNode.transform.position;
+        while (Vector3.Distance(transform.position, targetPos) > 0.05f)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, targetPos, speed * Time.deltaTime);
+            yield return null;
+        }
+
+        transform.position = targetPos;
+        currentNode = nextNode;
+        
+        // Remove the node we just reached so path[1] is always the NEXT step
+        path.RemoveAt(0); 
+        
+        stepsTaken++;
+        yield return new WaitForSeconds(0.1f);
     }
 
+    isTakingTurn = false;
+}
+
+    void FaceTarget(Vector3 target)
+    {
+        Vector3 dir = target - transform.position;
+        dir.y = 0f;
+
+        if (dir != Vector3.zero)
+            transform.rotation = Quaternion.LookRotation(dir);
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (currentNode != null && path != null && path.Count > 1)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(
+                currentNode.transform.position + Vector3.up * 0.5f,
+                path[1].transform.position + Vector3.up * 0.5f
+            );
+        }
+    }
 }

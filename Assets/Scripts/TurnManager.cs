@@ -61,7 +61,7 @@ public class TurnManager : MonoBehaviour
     // Call this when the player finishes their move
     public void EndPlayerTurn()
     {
-        if (!isPlayerTurn) return;
+        if (!isPlayerTurn || !inputEnabled) return; 
 
         isPlayerTurn = false;
         isEnemyTurn = true;
