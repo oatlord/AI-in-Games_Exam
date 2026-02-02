@@ -11,6 +11,17 @@ public class PlayerMovement : MonoBehaviour
     public float jumpHeight = 1.2f;
     public float tileSize = 1f;
 
+    [Header("Juice Settings")]
+    public float stretchAmount = 1.2f;
+    public float squashAmount = 0.7f;
+    public float squashDuration = 0.15f;
+
+    [Header("Audio Settings")]
+    public AudioSource audioSource;
+    public AudioClip hopSfx;
+    public AudioClip ribbitSfx;
+    public AudioClip jumpSfx;
+
     [Header("Detection Layers")]
     public LayerMask groundMask;
     public LayerMask barrierMask;
@@ -18,7 +29,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("References")]
     public TurnManager turnManager;
-    public GameObject victoryUI; // Assign your Victory Screen in Inspector
+    public GameObject victoryUI;
     public Node currentNode;
     public Node victoryNode;
 
@@ -26,10 +37,12 @@ public class PlayerMovement : MonoBehaviour
     private Coroutine moveCoroutine;
     private bool isMoving;
     private float exitReachDistance = 1.5f;
+    private Vector3 originalScale;
 
     void Awake()
     {
         input = new InputSystem_Actions();
+        originalScale = transform.localScale;
     }
 
     void Start()
@@ -59,23 +72,16 @@ public class PlayerMovement : MonoBehaviour
         Vector3 targetPos = transform.position + dir * tileSize;
         bool isJumping = false;
 
-        // 1. Check for a barrier in the immediate path
         if (Physics.Raycast(transform.position + Vector3.up * 0.5f, dir, out RaycastHit hit, tileSize, barrierMask))
         {
-            // 2. Barrier found! Check if neighbor tile is valid ground
             if (Physics.Raycast(targetPos + Vector3.up, Vector3.down, 2f, groundMask))
             {
                 isJumping = true; 
-                Debug.Log("Wall detected! Initiating jump.");
             }
-            else
-            {
-                return; // No ground to land on
-            }
+            else return;
         }
         else
         {
-            // Normal move: check ground for the tile we're walking to
             if (!Physics.Raycast(targetPos + Vector3.up, Vector3.down, 2f, groundMask))
                 return;
         }
@@ -85,74 +91,69 @@ public class PlayerMovement : MonoBehaviour
     }
 
     IEnumerator MoveRoutine(Vector3 targetPos, float yRotation, bool isJumping)
-{
-    isMoving = true;
-    Quaternion targetRot = Quaternion.Euler(0, yRotation, 0);
-
-    // 1. Rotate first (keep this as is)
-    while (Quaternion.Angle(transform.rotation, targetRot) > 0.1f)
     {
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
-        yield return null;
+        isMoving = true;
+        Quaternion targetRot = Quaternion.Euler(0, yRotation, 0);
+
+        while (Quaternion.Angle(transform.rotation, targetRot) > 0.1f)
+        {
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
+            yield return null;
+        }
+
+        Vector3 startPos = transform.position;
+        float elapsedTime = 0f;
+        float duration = Vector3.Distance(startPos, targetPos) / moveSpeed;
+
+        if (audioSource != null)
+        audioSource.PlayOneShot(isJumping ? jumpSfx : hopSfx);
+
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            float percent = Mathf.Clamp01(elapsedTime / duration);
+
+            Vector3 currentPos = Vector3.Lerp(startPos, targetPos, percent);
+            float currentArcHeight = isJumping ? jumpHeight : hopHeight;
+            float arc = currentArcHeight * Mathf.Sin(percent * Mathf.PI);
+            currentPos.y += arc;
+            transform.position = currentPos;
+
+            float stretchY = originalScale.y + (Mathf.Sin(percent * Mathf.PI) * (stretchAmount - 1f));
+            float stretchXZ = originalScale.x - (Mathf.Sin(percent * Mathf.PI) * 0.1f);
+            transform.localScale = new Vector3(stretchXZ, stretchY, stretchXZ);
+
+            yield return null;
+        }
+
+        transform.position = targetPos;
+        currentNode = AStarManager.instance.FindNearestNode(transform.position);
+
+        if (audioSource != null && ribbitSfx != null)
+        audioSource.PlayOneShot(ribbitSfx);
+
+        yield return StartCoroutine(SquashRoutine());
+
+        isMoving = false;
+
+        if (currentNode == victoryNode) 
+        {
+            yield return StartCoroutine(AutoMoveToExit());
+            yield break; 
+        }
+
+        if (turnManager)
+            turnManager.EndPlayerTurn();
     }
-
-    Vector3 startPos = transform.position;
-    float elapsedTime = 0f;
-    float duration = Vector3.Distance(startPos, targetPos) / moveSpeed;
-
-    // 2. Movement Loop with Hopping
-    while (elapsedTime < duration)
-    {
-        elapsedTime += Time.deltaTime;
-        float percent = Mathf.Clamp01(elapsedTime / duration);
-
-        // Standard linear move from A to B
-        Vector3 currentPos = Vector3.Lerp(startPos, targetPos, percent);
-
-        // Determine how high to hop
-        // If jumping a barrier, use jumpHeight. Otherwise, use a small hopHeight.
-        float currentArcHeight = isJumping ? jumpHeight : hopHeight;
-
-        // Apply the parabolic arc
-        // Formula: height * sin(0 to PI) creates a 0 -> 1 -> 0 curve
-        float arc = currentArcHeight * Mathf.Sin(percent * Mathf.PI);
-        currentPos.y += arc;
-
-        transform.position = currentPos;
-        yield return null;
-    }
-
-    // Snap to final position
-    transform.position = targetPos;
-    currentNode = AStarManager.instance.FindNearestNode(transform.position);
-    isMoving = false;
-
-    // --- VICTORY CHECK ---
-    if (currentNode == victoryNode) 
-    {
-        yield return StartCoroutine(AutoMoveToExit());
-        yield break; 
-    }
-
-    if (turnManager)
-        turnManager.EndPlayerTurn();
-}
-
-    // ===============================
-    // EXIT & VICTORY LOGIC
-    // ===============================
 
     IEnumerator AutoMoveToExit()
     {
-        // Find the actual exit object near this node
         Collider[] exits = Physics.OverlapSphere(transform.position, exitReachDistance, exitMask);
         if (exits.Length == 0) yield break;
         
         Vector3 exitPos = exits[0].transform.position;
-        // Ensure the player stays on the ground level of the exit
         exitPos.y = transform.position.y; 
 
-        // 1. Face the exit
         Vector3 dir = (exitPos - transform.position).normalized;
         if (dir != Vector3.zero)
         {
@@ -164,8 +165,6 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        // 2. Walk directly into the exit center
-        // We use a slight hop here too if you want to keep the "bouncy" feel!
         Vector3 startPos = transform.position;
         float walkDuration = 0.5f; 
         float elapsed = 0f;
@@ -176,20 +175,34 @@ public class PlayerMovement : MonoBehaviour
             float percent = elapsed / walkDuration;
             
             Vector3 currentPos = Vector3.Lerp(startPos, exitPos, percent);
-            // Add a final victory hop
             currentPos.y += hopHeight * Mathf.Sin(percent * Mathf.PI);
-            
             transform.position = currentPos;
+
+            float stretchY = originalScale.y + (Mathf.Sin(percent * Mathf.PI) * (stretchAmount - 1f));
+            transform.localScale = new Vector3(originalScale.x, stretchY, originalScale.z);
+            
             yield return null;
         }
 
-        // Final position snap
         transform.position = exitPos;
+        yield return StartCoroutine(SquashRoutine());
 
-        // Show UI
         if (victoryUI != null) victoryUI.SetActive(true);
         input.Player.Disable();
-        
-        Debug.Log("Victory achieved on the correct tile!");
     }
+    IEnumerator SquashRoutine()
+    {
+        float timer = 0f;
+        while (timer < squashDuration)
+        {
+            timer += Time.deltaTime;
+            float t = timer / squashDuration;
+            float currentY = Mathf.Lerp(originalScale.y * squashAmount, originalScale.y, t);
+            // Counter-stretch X and Z to keep volume consistent
+            float currentXZ = Mathf.Lerp(originalScale.x * stretchAmount, originalScale.x, t);
+            transform.localScale = new Vector3(currentXZ, currentY, currentXZ);
+            yield return null;
+        }
+        transform.localScale = originalScale;
     }
+}
