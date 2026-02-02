@@ -738,6 +738,39 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 879763317}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &118253065
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 118253066}
+  m_Layer: 0
+  m_Name: SwampWater
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &118253066
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 118253065}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 5.3221, y: -0.23, z: 2.48}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1061270844}
+  - {fileID: 618303143}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &135502320 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: -2888884603029417970, guid: c76c6d11272e54f4081c3534e12a3fdb,
@@ -3140,12 +3173,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 618303139}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.3221, y: -0.23, z: 2.48}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.84308016, y: 0.84308016, z: 0.84308016}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 118253066}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &676931932
 GameObject:
@@ -5649,12 +5682,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1061270840}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.1021, y: -0.23, z: 2.48}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -8.4242, y: 0, z: 0}
   m_LocalScale: {x: 0.84308016, y: 0.84308016, z: 0.84308016}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 118253066}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1081294931 stripped
 MonoBehaviour:
@@ -9761,6 +9794,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 1921191678}
   enemy: {fileID: 2084977715}
+  canvas: {fileID: 0}
 --- !u!4 &1964816086
 Transform:
   m_ObjectHideFlags: 0
@@ -10561,5 +10595,4 @@ SceneRoots:
   - {fileID: 1923503556}
   - {fileID: 960075639}
   - {fileID: 1516223517}
-  - {fileID: 1061270844}
-  - {fileID: 618303143}
+  - {fileID: 118253066}

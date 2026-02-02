@@ -30,7 +30,7 @@ public class AIMovement : MonoBehaviour
     private Node forbiddenTo;
     private Vector3 originalScale;
     int replanAttempts = 0;
-    int maxReplansPerTurn = 1;
+    int maxReplansPerTurn = 2;
 
 
     void Start()
@@ -101,8 +101,6 @@ public class AIMovement : MonoBehaviour
                 continue;
             }
 
-
-
             // Rotation
             Vector3 moveDir = (nextNode.transform.position - transform.position).normalized;
             if (moveDir != Vector3.zero)
@@ -142,6 +140,9 @@ public class AIMovement : MonoBehaviour
 
             transform.position = targetPos;
             currentNode = nextNode;
+            forbiddenFrom = null;
+            forbiddenTo = null;
+            replanAttempts = 0;
 
             float squashTimer = 0f;
             float squashDuration = 0.15f; 
