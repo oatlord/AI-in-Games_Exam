@@ -15,12 +15,12 @@ public class AStarManager : MonoBehaviour
     }
 
     // 🔹 OPTION A: forbidden edge parameters
-    public List<Node> GeneratePath(
+public List<Node> GeneratePath(
     Node start,
     Node end,
     Node forbiddenFrom = null,
     Node forbiddenTo = null,
-    bool prioritizeAxis = false
+    bool prioritizeAxis = true
 )
 {
     if (start == null || end == null) return null;
@@ -33,9 +33,15 @@ public class AStarManager : MonoBehaviour
         n.cameFrom = null;
     }
 
+    // 🔑 Decide which axis is faster RIGHT NOW
+    float dx = Mathf.Abs(start.transform.position.x - end.transform.position.x);
+    float dz = Mathf.Abs(start.transform.position.z - end.transform.position.z);
+    bool preferHorizontal = dx >= dz;
+
     start.gScore = 0;
-    start.hScore = Vector3.Distance(start.transform.position, end.transform.position);
+    start.hScore = Heuristic(start, end, preferHorizontal);
     openSet.Add(start);
+
 
     while (openSet.Count > 0)
     {
@@ -47,7 +53,7 @@ public class AStarManager : MonoBehaviour
         }
 
         Node currentNode = openSet[lowestF];
-        openSet.Remove(currentNode);
+        openSet.RemoveAt(lowestF);
 
         if (currentNode == end)
         {
@@ -64,20 +70,24 @@ public class AStarManager : MonoBehaviour
             return path;
         }
 
-        foreach (Node connectedNode in currentNode.connections)
+        // 🔥 ORDER NEIGHBORS BY FASTEST AXIS
+        List<Node> orderedNeighbors =
+            GetOrderedNeighbors(currentNode, end, preferHorizontal);
+
+        foreach (Node connectedNode in orderedNeighbors)
         {
-            // 🔹 Forbidden edge
+            // ❌ Forbidden edge
             if (forbiddenFrom != null && forbiddenTo != null)
             {
                 if (currentNode == forbiddenFrom && connectedNode == forbiddenTo)
                     continue;
             }
 
-            // 🔹 Wall check
+            // ❌ Barrier check
             Vector3 startPos = currentNode.transform.position + Vector3.up * 0.5f;
-            Vector3 endPos   = connectedNode.transform.position + Vector3.up * 0.5f;
+            Vector3 endPos = connectedNode.transform.position + Vector3.up * 0.5f;
 
-            if (Physics.Linecast(startPos, endPos, out _, barrierMask))
+            if (Physics.Linecast(startPos, endPos, barrierMask))
                 continue;
 
             float tentativeG =
@@ -88,45 +98,7 @@ public class AStarManager : MonoBehaviour
             {
                 connectedNode.cameFrom = currentNode;
                 connectedNode.gScore = tentativeG;
-
-                // 🔹 Base heuristic
-                float h = Vector3.Distance(
-                    connectedNode.transform.position,
-                    end.transform.position
-                );
-
-                // 🔥 AXIS PRIORITY BIAS (WITH STICKINESS)
-            if (prioritizeAxis)
-            {
-                bool aiAlignedZ =
-                    Mathf.Abs(start.transform.position.z - end.transform.position.z) < 0.1f;
-
-                bool aiAlignedX =
-                    Mathf.Abs(start.transform.position.x - end.transform.position.x) < 0.1f;
-
-                bool nodeAlignedZ =
-                    Mathf.Abs(connectedNode.transform.position.z - end.transform.position.z) < 0.1f;
-
-                bool nodeAlignedX =
-                    Mathf.Abs(connectedNode.transform.position.x - end.transform.position.x) < 0.1f;
-
-                // 🔒 If AI is already aligned, discourage breaking alignment
-                if (aiAlignedZ && !nodeAlignedZ)
-                {
-                    h *= 2.5f; // penalty for leaving Z axis
-                }
-                else if (aiAlignedX && !nodeAlignedX)
-                {
-                    h *= 2.5f; // penalty for leaving X axis
-                }
-                // 🎯 Otherwise, encourage getting aligned
-                else if (nodeAlignedZ || nodeAlignedX)
-                {
-                    h *= 0.3f; // your existing preference
-                }
-            }
-
-                connectedNode.hScore = h;
+                connectedNode.hScore = Heuristic(connectedNode, end, preferHorizontal);
 
                 if (!openSet.Contains(connectedNode))
                     openSet.Add(connectedNode);
@@ -137,6 +109,60 @@ public class AStarManager : MonoBehaviour
     return null;
 }
 
+float Heuristic(Node a, Node b, bool preferHorizontal)
+{
+    float dx = Mathf.Abs(a.transform.position.x - b.transform.position.x);
+    float dz = Mathf.Abs(a.transform.position.z - b.transform.position.z);
+
+    float h = dx + dz;
+
+    // 🔹 Tie-break bias (VERY SMALL)
+    if (Mathf.Abs(dx - dz) < 0.01f)
+    {
+        if (preferHorizontal)
+            h += 0.001f * dz; // discourage vertical-first
+        else
+            h += 0.001f * dx; // discourage horizontal-first
+    }
+
+    return h;
+}
+
+
+List<Node> GetOrderedNeighbors(Node current, Node end, bool preferHorizontal)
+{
+    List<Node> horizontal = new List<Node>();
+    List<Node> vertical = new List<Node>();
+
+    foreach (Node n in current.connections)
+    {
+        if (Mathf.Abs(n.transform.position.x - current.transform.position.x) >
+            Mathf.Abs(n.transform.position.z - current.transform.position.z))
+            horizontal.Add(n);
+        else
+            vertical.Add(n);
+    }
+
+    // Sort so the move that REDUCES distance comes first
+    horizontal.Sort((a, b) =>
+        Mathf.Abs(a.transform.position.x - end.transform.position.x)
+        .CompareTo(Mathf.Abs(b.transform.position.x - end.transform.position.x)));
+
+    vertical.Sort((a, b) =>
+        Mathf.Abs(a.transform.position.z - end.transform.position.z)
+        .CompareTo(Mathf.Abs(b.transform.position.z - end.transform.position.z)));
+
+    return preferHorizontal
+        ? Combine(horizontal, vertical)
+        : Combine(vertical, horizontal);
+}
+
+List<Node> Combine(List<Node> first, List<Node> second)
+{
+    List<Node> result = new List<Node>(first);
+    result.AddRange(second);
+    return result;
+}
 
     public Node FindNearestNode(Vector3 pos)
     {

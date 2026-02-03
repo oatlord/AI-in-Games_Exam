@@ -81,7 +81,7 @@ public class AIMovement : MonoBehaviour
                 if (replanAttempts >= maxReplansPerTurn)
                 {
                     // Give up this turn to avoid freezing
-                    FaceTargetCardinal(player.transform.position);
+                    yield return StartCoroutine(FaceTargetCardinalSmooth(player.transform.position));
                     break;
                 }
 
@@ -94,7 +94,7 @@ public class AIMovement : MonoBehaviour
 
                 if (path == null || path.Count <= 1)
                 {
-                    FaceTargetCardinal(player.transform.position);
+                    yield return StartCoroutine(FaceTargetCardinalSmooth(player.transform.position));
                     break;
                 }
 
@@ -164,28 +164,46 @@ public class AIMovement : MonoBehaviour
         if (audioSource != null && ribbitSfx != null)
             audioSource.PlayOneShot(ribbitSfx);
 
+        UndoManager.instance.RecordState();
         isTakingTurn = false;
     }
 
-    // UPDATED: Forces the AI to face only Forward, Back, Left, or Right
-    void FaceTargetCardinal(Vector3 target)
-    {
-        Vector3 diff = target - transform.position;
+    IEnumerator FaceTargetCardinalSmooth(Vector3 target)
+{
+    Vector3 diff = target - transform.position;
+    Vector3 cardinalDir;
 
-        // If the horizontal distance is greater than the vertical distance
-        if (Mathf.Abs(diff.x) > Mathf.Abs(diff.z))
-        {
-            // Face Left or Right
-            float xDir = diff.x > 0 ? 1 : -1;
-            transform.rotation = Quaternion.LookRotation(new Vector3(xDir, 0, 0));
-        }
-        else
-        {
-            // Face Forward or Back
-            float zDir = diff.z > 0 ? 1 : -1;
-            transform.rotation = Quaternion.LookRotation(new Vector3(0, 0, zDir));
-        }
+    // Determine the target cardinal direction
+    if (Mathf.Abs(diff.x) > Mathf.Abs(diff.z))
+    {
+        cardinalDir = new Vector3(diff.x > 0 ? 1 : -1, 0, 0);
     }
+    else
+    {
+        cardinalDir = new Vector3(0, 0, diff.z > 0 ? 1 : -1);
+    }
+
+    Quaternion targetRot = Quaternion.LookRotation(cardinalDir);
+
+    // Smoothly rotate until we are close enough to the target rotation
+    while (Quaternion.Angle(transform.rotation, targetRot) > 0.1f)
+    {
+        transform.rotation = Quaternion.RotateTowards(
+            transform.rotation, 
+            targetRot, 
+            rotationSpeed * Time.deltaTime
+        );
+        yield return null;
+    }
+    
+    // Ensure it's perfectly aligned at the end
+    transform.rotation = targetRot;
+}
+
+public bool GetIsTakingTurn()
+{
+    return isTakingTurn;
+}
 
     private void OnDrawGizmos()
     {
