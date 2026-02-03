@@ -32,7 +32,6 @@ public class AIMovement : MonoBehaviour
     int replanAttempts = 0;
     int maxReplansPerTurn = 2;
 
-
     void Start()
     {
         originalScale = transform.localScale;
@@ -75,12 +74,10 @@ public class AIMovement : MonoBehaviour
             {
                 forbiddenFrom = currentNode;
                 forbiddenTo = nextNode;
-
                 replanAttempts++;
 
                 if (replanAttempts >= maxReplansPerTurn)
                 {
-                    // Give up this turn to avoid freezing
                     yield return StartCoroutine(FaceTargetCardinalSmooth(player.transform.position));
                     break;
                 }
@@ -97,7 +94,6 @@ public class AIMovement : MonoBehaviour
                     yield return StartCoroutine(FaceTargetCardinalSmooth(player.transform.position));
                     break;
                 }
-
                 continue;
             }
 
@@ -131,9 +127,9 @@ public class AIMovement : MonoBehaviour
                 currentPos.y += arc;
                 transform.position = currentPos;
 
-                float stretchScaleY = originalScale.y + (Mathf.Sin(percent * Mathf.PI) * (stretchAmount - 1f));
-                float stretchScaleXZ = originalScale.x - (Mathf.Sin(percent * Mathf.PI) * 0.1f);
-                transform.localScale = new Vector3(stretchScaleXZ, stretchScaleY, stretchScaleXZ);
+                float sY = originalScale.y + (Mathf.Sin(percent * Mathf.PI) * (stretchAmount - 1f));
+                float sXZ = originalScale.x - (Mathf.Sin(percent * Mathf.PI) * 0.1f);
+                transform.localScale = new Vector3(sXZ, sY, sXZ);
 
                 yield return null;
             }
@@ -164,46 +160,30 @@ public class AIMovement : MonoBehaviour
         if (audioSource != null && ribbitSfx != null)
             audioSource.PlayOneShot(ribbitSfx);
 
-        UndoManager.instance.RecordState();
+        // Keep this: Needed for Undo system
+        if (UndoManager.instance != null) UndoManager.instance.RecordState();
+        
         isTakingTurn = false;
     }
 
+    // Keep this: Needed for LoseManager to know when to start the Victory Dance
+    public bool GetIsTakingTurn() => isTakingTurn;
+
     IEnumerator FaceTargetCardinalSmooth(Vector3 target)
-{
-    Vector3 diff = target - transform.position;
-    Vector3 cardinalDir;
-
-    // Determine the target cardinal direction
-    if (Mathf.Abs(diff.x) > Mathf.Abs(diff.z))
     {
-        cardinalDir = new Vector3(diff.x > 0 ? 1 : -1, 0, 0);
-    }
-    else
-    {
-        cardinalDir = new Vector3(0, 0, diff.z > 0 ? 1 : -1);
-    }
+        Vector3 diff = target - transform.position;
+        Vector3 cardinalDir = (Mathf.Abs(diff.x) > Mathf.Abs(diff.z)) 
+            ? new Vector3(diff.x > 0 ? 1 : -1, 0, 0) 
+            : new Vector3(0, 0, diff.z > 0 ? 1 : -1);
 
-    Quaternion targetRot = Quaternion.LookRotation(cardinalDir);
-
-    // Smoothly rotate until we are close enough to the target rotation
-    while (Quaternion.Angle(transform.rotation, targetRot) > 0.1f)
-    {
-        transform.rotation = Quaternion.RotateTowards(
-            transform.rotation, 
-            targetRot, 
-            rotationSpeed * Time.deltaTime
-        );
-        yield return null;
+        Quaternion targetRot = Quaternion.LookRotation(cardinalDir);
+        while (Quaternion.Angle(transform.rotation, targetRot) > 0.1f)
+        {
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
+            yield return null;
+        }
+        transform.rotation = targetRot;
     }
-    
-    // Ensure it's perfectly aligned at the end
-    transform.rotation = targetRot;
-}
-
-public bool GetIsTakingTurn()
-{
-    return isTakingTurn;
-}
 
     private void OnDrawGizmos()
     {
