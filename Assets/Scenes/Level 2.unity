@@ -4750,6 +4750,11 @@ PrefabInstance:
       objectReference: {fileID: 2101483608}
     - target: {fileID: 377427677848510187, guid: e4643dbccd630364bba05b7ca7156081,
         type: 3}
+      propertyPath: audioSource
+      value: 
+      objectReference: {fileID: 1516223516}
+    - target: {fileID: 377427677848510187, guid: e4643dbccd630364bba05b7ca7156081,
+        type: 3}
       propertyPath: currentNode
       value: 
       objectReference: {fileID: 2069930594}
@@ -11032,6 +11037,11 @@ PrefabInstance:
       propertyPath: winManager
       value: 
       objectReference: {fileID: 1396722956}
+    - target: {fileID: 660744350581739893, guid: c691ad72193951b4eb783b431e2751a3,
+        type: 3}
+      propertyPath: audioSource
+      value: 
+      objectReference: {fileID: 1516223516}
     - target: {fileID: 660744350581739893, guid: c691ad72193951b4eb783b431e2751a3,
         type: 3}
       propertyPath: currentNode
