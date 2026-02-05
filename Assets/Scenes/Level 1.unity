@@ -9189,6 +9189,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   transitionAnimator: {fileID: 977886287}
+  winManager: {fileID: 1964816087}
   transitionTime: 1
 --- !u!1 &1668392093
 GameObject:
@@ -10628,6 +10629,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   turnManager: {fileID: 1933598751}
+  winManager: {fileID: 1964816087}
   currentNode: {fileID: 604176705}
   victoryNode: {fileID: 135502320}
 --- !u!143 &1921191680
@@ -11276,6 +11278,7 @@ MonoBehaviour:
   player: {fileID: 1921191678}
   victoryUI: {fileID: 213247866}
   fadeInController: {fileID: 213247867}
+  levelLoader: {fileID: 0}
 --- !u!1 &1989082749
 GameObject:
   m_ObjectHideFlags: 0
