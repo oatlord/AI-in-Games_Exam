@@ -66,6 +66,17 @@ public class PlayerMovement : MonoBehaviour
         input.Player.Disable();
     }
 
+    public void SetInputPlayerStatus(bool status)
+    {
+        if (status == false)
+        {
+            input.Player.Disable();
+        } else if (status == true)
+        {
+            input.Player.Enable();
+        }
+    }
+
     void TryMove(Vector3 dir, float yRotation)
     {
         if (isMoving) return;
