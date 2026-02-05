@@ -29,7 +29,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("References")]
     public TurnManager turnManager;
-    public GameObject victoryUI;
+    // public GameObject victoryUI;
     public Node currentNode;
     public Node victoryNode;
 
@@ -48,6 +48,7 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         currentNode = AStarManager.instance.FindNearestNode(transform.position);
+        // victoryUI.SetActive(false);
     }
 
     void OnEnable()
@@ -187,7 +188,7 @@ public class PlayerMovement : MonoBehaviour
         transform.position = exitPos;
         yield return StartCoroutine(SquashRoutine());
 
-        if (victoryUI != null) victoryUI.SetActive(true);
+        // if (victoryUI != null) victoryUI.SetActive(true);
         input.Player.Disable();
     }
     IEnumerator SquashRoutine()
