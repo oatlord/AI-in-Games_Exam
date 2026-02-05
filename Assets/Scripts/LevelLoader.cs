@@ -6,6 +6,7 @@ public class LevelLoader : MonoBehaviour
 {
     public static LevelLoader instance;
     public Animator transitionAnimator;
+    public WinManager winManager;
     public float transitionTime = 1f;
 
     private bool isLoading = false;
@@ -33,6 +34,7 @@ public class LevelLoader : MonoBehaviour
     public void LoadNextLevel()
     {
         UndoManager.instance?.ResetUndoCount();
+        winManager.TurnOffUi();
         StartCoroutine(LoadLevel(SceneManager.GetActiveScene().buildIndex + 1));
     }
 
