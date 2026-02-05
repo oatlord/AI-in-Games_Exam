@@ -45,9 +45,9 @@ public class WinManager : MonoBehaviour
             Debug.Log("Controller exists");
         }
 
-        Debug.Log(onActiveAnimationTriggerHash);
-        Debug.Log("Parameters:" + fadeInController.parameterCount);
-        Debug.Log("Animation Controller: " + fadeInController.name);
+        // Debug.Log(onActiveAnimationTriggerHash);
+        // Debug.Log("Parameters:" + fadeInController.parameterCount);
+        // Debug.Log("Animation Controller: " + fadeInController.name);
     }
 
     // public void NextLevel()
