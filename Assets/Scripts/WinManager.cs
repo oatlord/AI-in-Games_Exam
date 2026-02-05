@@ -1,73 +1,31 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class WinManager : MonoBehaviour
 {
-    private PlayerPositionCheck playerPosCheckScript;
-
-    [Header("Public References")]
-    public GameObject player;
-    public GameObject victoryUI;
     public Animator fadeInController;
-    public LevelLoader levelLoader;
 
-    [Header("Animator References")]
-    private int onActiveAnimationTriggerHash;
+    private int fadeTriggerHash;
+    private bool hasPlayed = false;
 
-    // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
-        playerPosCheckScript = player.GetComponent<PlayerPositionCheck>();
-        victoryUI.SetActive(false);
-        onActiveAnimationTriggerHash = Animator.StringToHash("isActive");
+        fadeTriggerHash = Animator.StringToHash("fade");
     }
 
-    // Update is called once per frame
-    void Update()
+    public void PlayFadeAnimation()
     {
-        // Shortcut for victory screen view
-        if (Input.GetKeyDown(KeyCode.Q) && victoryUI != null)
-        {
-            if (victoryUI.activeSelf == false)
-            {
-                victoryUI.SetActive(true);
-            }
-            else
-            {
-                victoryUI.SetActive(false);
-            }
-        }
+        if (hasPlayed) return;
+        hasPlayed = true;
 
-        if (fadeInController != null)
+        if (fadeInController == null)
         {
-            Debug.Log("Controller exists");
+            Debug.LogWarning("Fade Animator not assigned!");
+            return;
         }
+        fadeInController.gameObject.SetActive(true);
 
-        // Debug.Log(onActiveAnimationTriggerHash);
-        // Debug.Log("Parameters:" + fadeInController.parameterCount);
-        // Debug.Log("Animation Controller: " + fadeInController.name);
+        fadeInController.SetTrigger(fadeTriggerHash);
+        Debug.Log("Fade animation triggered!");
     }
 
-    // public void NextLevel()
-    // {
-    //     levelLoader = 
-    // }
-
-    public void TurnOnUi()
-    {
-        if (victoryUI.activeSelf == false)
-        {
-            victoryUI.SetActive(true);
-        }
-    }
-
-    public void TurnOffUi()
-    {
-        if (victoryUI.activeSelf == true)
-        {
-            victoryUI.SetActive(false);
-        }
-    }
 }

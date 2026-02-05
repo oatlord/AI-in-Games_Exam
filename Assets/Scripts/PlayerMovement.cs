@@ -189,8 +189,6 @@ public class PlayerMovement : MonoBehaviour
         transform.position = exitPos;
         yield return StartCoroutine(SquashRoutine());
 
-        // if (victoryUI != null) victoryUI.SetActive(true);
-        winManager.TurnOnUi();
         input.Player.Disable();
     }
     IEnumerator SquashRoutine()

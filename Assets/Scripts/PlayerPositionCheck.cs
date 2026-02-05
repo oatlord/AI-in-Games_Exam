@@ -1,41 +1,40 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerPositionCheck : MonoBehaviour
 {
-    private Ray checkPositionRay;
-    private Transform currentTile;
-    public float rayLength = 3;
-    public LayerMask groundLayer;
+    public Transform currentTile;
+    public float rayLength = 3f;
 
-    private Transform lastTile; // to track the previous tile
+    [Header("Detection Layers")]
+    public LayerMask groundLayer;
+    public LayerMask exitLayer;
+
+    private LayerMask combinedMask;
+    private bool hasWon = false;
+
+    public WinManager winManager;
+
+    void Start()
+    {
+        // Combine Ground + Exit
+        combinedMask = groundLayer | exitLayer;
+    }
 
     void Update()
     {
-        checkPositionRay = new Ray(transform.position, Vector3.down);
+        Ray ray = new Ray(transform.position, Vector3.down);
 
-        if (Physics.Raycast(checkPositionRay, out RaycastHit hit, rayLength, groundLayer))
+        if (Physics.Raycast(ray, out RaycastHit hit, rayLength, combinedMask))
         {
-            // Only log if we moved to a new tile
-            if (hit.transform != lastTile)
+            currentTile = hit.transform;
+
+            if (!hasWon && hit.transform.gameObject.layer == LayerMask.NameToLayer("Exit"))
             {
-                currentTile = hit.transform;
-                Debug.Log("Player Tile: " + currentTile);
-
-                if (currentTile.CompareTag("WinTile"))
-                {
-                    Debug.Log("Yay we won");
-                }
-
-                lastTile = currentTile; // update lastTile
+                hasWon = true;
+                Debug.Log("EXIT REACHED");
+                winManager.PlayFadeAnimation();
             }
         }
-    }
-
-    public Transform GetCurrentTile()
-    {
-        return currentTile;
     }
 
     void OnDrawGizmos()

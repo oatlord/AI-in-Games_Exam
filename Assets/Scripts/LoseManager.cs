@@ -25,7 +25,7 @@ void Update()
         InitiateReset();
     }
 
-    Transform playerCurrentPos = playerPosCheckScript.GetCurrentTile();
+    Transform playerCurrentPos = playerPosCheckScript.currentTile;
     Transform enemyCurrentPos = enemyPosCheckScript.GetCurrentTile();
 
     if (playerCurrentPos != null && playerCurrentPos.Equals(enemyCurrentPos))
