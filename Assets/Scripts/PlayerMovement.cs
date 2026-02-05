@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -30,6 +29,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("References")]
     public TurnManager turnManager;
     // public GameObject victoryUI;
+    public WinManager winManager;
     public Node currentNode;
     public Node victoryNode;
 
@@ -38,6 +38,7 @@ public class PlayerMovement : MonoBehaviour
     private bool isMoving;
     private float exitReachDistance = 1.5f;
     private Vector3 originalScale;
+
 
     void Awake()
     {
@@ -189,6 +190,7 @@ public class PlayerMovement : MonoBehaviour
         yield return StartCoroutine(SquashRoutine());
 
         // if (victoryUI != null) victoryUI.SetActive(true);
+        winManager.TurnOnUi();
         input.Player.Disable();
     }
     IEnumerator SquashRoutine()
