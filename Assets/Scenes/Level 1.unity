@@ -5438,10 +5438,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 2143856120}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 694.47, y: -565.4}
-  m_SizeDelta: {x: 783.2, y: 50}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: -265.53003, y: 61.599976}
+  m_SizeDelta: {x: 783.19995, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1011419553
 MonoBehaviour:
@@ -6799,10 +6799,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 2143856120}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 721.8, y: -402.7}
-  m_SizeDelta: {x: 783.2, y: 50}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: -238.20001, y: 224.29999}
+  m_SizeDelta: {x: 783.19995, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!95 &1287146394
 Animator:
@@ -10438,6 +10438,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1964816086}
   - component: {fileID: 1964816085}
+  - component: {fileID: 1964816087}
   m_Layer: 0
   m_Name: WinLoseManager
   m_TagString: Untagged
@@ -10474,6 +10475,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1964816087
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1964816084}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2483852d9623d2240b1aa79e2bbe0512, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 1921191678}
 --- !u!1 &1989082749
 GameObject:
   m_ObjectHideFlags: 0
