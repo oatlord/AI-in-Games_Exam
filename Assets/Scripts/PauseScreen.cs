@@ -12,38 +12,9 @@ public class PauseScreen : MonoBehaviour
     private bool gamePauseActivated = false;
 
     private Coroutine pauseFadeCoroutine;
-    // public readonly int isActiveHash = Animator.StringToHash("isActive");
-    // Start is called before the first frame update
-    void Start()
-    {
-        // pauseScreen.SetActive(false);
-    }
 
-    void Awake()
-    {
-        // gamePauseActivated = true;
-    }
-
-    // Update is called once per frame
     void Update()
     {
-        // if (Input.GetKeyDown(KeyCode.Escape))
-        // {
-        //     PauseButton();
-        // }
-        // if (Input.GetKeyDown(KeyCode.Escape))
-        // {
-        //     if (pauseCanvas.activeSelf == false)
-        //     {
-        //         pauseCanvas.SetActive(true);
-        //         gamePauseActivated = true;
-        //     } else
-        //     {
-        //         pauseCanvas.SetActive(false);
-        //         gamePauseActivated = false;
-        //     }
-        // }
-
         Debug.Log("Pause Canvas active: "+pauseCanvas.activeSelf);
         Debug.Log("Game Pause Activated: "+gamePauseActivated);
     }
@@ -84,7 +55,7 @@ public class PauseScreen : MonoBehaviour
 
     IEnumerator PauseFade()
     {
-        if (pauseScreenAnimator != null)
+        if (pauseScreenAnimator != null && pauseScreenAnimator.runtimeAnimatorController != null)
         {
             if (gamePauseActivated == false)
             {
