@@ -1,61 +1,103 @@
 using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.PackageManager.UI;
 using UnityEngine;
 
 public class PauseScreen : MonoBehaviour
 {
     public PlayerMovement player;
     public Animator pauseScreenAnimator;
+    public GameObject pauseCanvas;
     public float transitionTime = 1f;
+
     private bool windowActive = false;
-    private bool gamePause = false;
+    private bool gamePauseActivated = false;
+
+    private Coroutine pauseFadeCoroutine;
     // public readonly int isActiveHash = Animator.StringToHash("isActive");
     // Start is called before the first frame update
     void Start()
     {
-        
+        // pauseScreen.SetActive(false);
+    }
+
+    void Awake()
+    {
+        // gamePauseActivated = true;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            if (windowActive == false)
-            {
-                player.SetInputPlayerStatus(false);
-                windowActive = true;
-                gamePause = true;
-                StartCoroutine(PauseFade("FadeIn"));
-            } else
-            {
-                player.SetInputPlayerStatus(true);
-                windowActive = false;
-                gamePause = false;
-                StartCoroutine(PauseFade("FadeOut"));
-            }
-        }
+        // if (Input.GetKeyDown(KeyCode.Escape))
+        // {
+        //     PauseButton();
+        // }
+        // if (Input.GetKeyDown(KeyCode.Escape))
+        // {
+        //     if (pauseCanvas.activeSelf == false)
+        //     {
+        //         pauseCanvas.SetActive(true);
+        //         gamePauseActivated = true;
+        //     } else
+        //     {
+        //         pauseCanvas.SetActive(false);
+        //         gamePauseActivated = false;
+        //     }
+        // }
+
+        Debug.Log("Pause Canvas active: "+pauseCanvas.activeSelf);
+        Debug.Log("Game Pause Activated: "+gamePauseActivated);
     }
 
     void PauseGame()
     {
-        if (gamePause == true)
+        if (gamePauseActivated == false)
         {
             Time.timeScale = 0f;
-        } else if (gamePause == false)
+            gamePauseActivated = true;
+            player.SetInputPlayerStatus(false);
+            pauseCanvas.SetActive(true);
+        } else
         {
             Time.timeScale = 1f;
+            gamePauseActivated = false;
+            player.SetInputPlayerStatus(true);
+            pauseCanvas.SetActive(false);
         }
     }
 
-    IEnumerator PauseFade(string triggerName)
+    public void PauseButton()
+    {
+        if (pauseFadeCoroutine == null)
+        {
+            pauseFadeCoroutine = StartCoroutine(PauseFade());
+        } else
+        {
+            StopCoroutine(pauseFadeCoroutine);
+            pauseFadeCoroutine = StartCoroutine(PauseFade());
+        }
+    }
+
+    public void ButtonPress()
+    {
+        Debug.Log("Button pressed");
+    }
+
+    IEnumerator PauseFade()
     {
         if (pauseScreenAnimator != null)
         {
-            pauseScreenAnimator.SetTrigger(triggerName);
+            if (gamePauseActivated == false)
+            {
+                pauseScreenAnimator.SetTrigger("FadeIn");
+                Debug.Log("Game Paused");
+            } else
+            {
+                pauseScreenAnimator.SetTrigger("FadeOut");
+                Debug.Log("Game Unpaused");
+            }
         }
         yield return new WaitForSecondsRealtime(transitionTime);
         PauseGame();
+        // yield break;
     }
 }
