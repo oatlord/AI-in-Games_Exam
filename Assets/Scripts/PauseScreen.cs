@@ -1,40 +1,47 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PauseScreen : MonoBehaviour
 {
     public PlayerMovement player;
     public CanvasGroup pauseGroup;
 
-    private bool windowActive = false;
-    private bool gamePause = false;
+    private bool isPaused;
 
     void Start()
     {
-        SetPauseUI(false);
+        ApplyPauseState(false);
     }
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            windowActive = !windowActive;
-            gamePause = windowActive;
-
-            player.SetInputPlayerStatus(!windowActive);
-            PauseGame();
-            SetPauseUI(windowActive);
+            TogglePause();
         }
     }
 
-    void PauseGame()
+    public void TogglePause()
     {
-        Time.timeScale = gamePause ? 0f : 1f;
+        ApplyPauseState(!isPaused);
     }
 
-    void SetPauseUI(bool show)
+    void ApplyPauseState(bool pause)
     {
-        pauseGroup.alpha = show ? 1f : 0f;
-        pauseGroup.interactable = show;
-        pauseGroup.blocksRaycasts = show;
+        isPaused = pause;
+
+        Time.timeScale = pause ? 0f : 1f;
+
+        player.SetInputPlayerStatus(!pause);
+
+        pauseGroup.alpha = pause ? 1f : 0f;
+        pauseGroup.interactable = pause;
+        pauseGroup.blocksRaycasts = pause;
+    }
+
+    public void ReturnToMenu()
+    {
+        ApplyPauseState(false);
+        SceneManager.LoadScene("Menu");
     }
 }
