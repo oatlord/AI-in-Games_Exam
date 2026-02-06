@@ -14,6 +14,11 @@ public class LevelLoader : MonoBehaviour
     private void Awake()
     {
         if (instance == null) instance = this;
+
+        if (transitionAnimator != null)
+    {
+        transitionAnimator.Play("Crossfade_End", 0, 0f);
+    }
     }
 
     void Update()

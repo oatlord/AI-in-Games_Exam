@@ -8155,18 +8155,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 483108492}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1656958547 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8882804132734721125, guid: a72be75b84ae70f40ad1520393705498,
-    type: 3}
-  m_PrefabInstance: {fileID: 6242908204389371042}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f851b431b9668f14eb2ec4ba9a0f0e9a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1668392093
 GameObject:
   m_ObjectHideFlags: 0
@@ -11081,6 +11069,18 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 787627473b68d8b4e82471197ed13558, type: 3}
+--- !u!114 &3307133769387233479 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8882804132734721125, guid: a72be75b84ae70f40ad1520393705498,
+    type: 3}
+  m_PrefabInstance: {fileID: 6242908204389371042}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f851b431b9668f14eb2ec4ba9a0f0e9a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &5146520530200918612
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11157,6 +11157,16 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1148069930581520232, guid: a72be75b84ae70f40ad1520393705498,
+        type: 3}
+      propertyPath: m_ReferenceResolution.y
+      value: 1080
+      objectReference: {fileID: 0}
+    - target: {fileID: 2261289397936168737, guid: a72be75b84ae70f40ad1520393705498,
+        type: 3}
+      propertyPath: m_UpdateMode
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3437989998321950200, guid: a72be75b84ae70f40ad1520393705498,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -11672,7 +11682,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1656958547}
+      objectReference: {fileID: 3307133769387233479}
     - target: {fileID: 4201899638590750498, guid: 6f36487e68808c947b83c1dde4374bce,
         type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -11700,9 +11710,9 @@ SceneRoots:
   - {fileID: 330585546}
   - {fileID: 2143856120}
   - {fileID: 976214136730570582}
+  - {fileID: 7185240215682165019}
   - {fileID: 6242908204389371042}
   - {fileID: 9083660330089581225}
-  - {fileID: 7185240215682165019}
   - {fileID: 410087041}
   - {fileID: 832575519}
   - {fileID: 1324187107}

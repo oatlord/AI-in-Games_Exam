@@ -2995,11 +2995,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: LevelLoader
       objectReference: {fileID: 0}
+    - target: {fileID: 7761935057295948316, guid: a72be75b84ae70f40ad1520393705498,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8882804132734721125, guid: a72be75b84ae70f40ad1520393705498,
         type: 3}
       propertyPath: winManager
       value: 
       objectReference: {fileID: 1396722956}
+    - target: {fileID: 8938323196059075621, guid: a72be75b84ae70f40ad1520393705498,
+        type: 3}
+      propertyPath: m_Alpha
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3404,6 +3414,12 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4808453406230161263, guid: c76c6d11272e54f4081c3534e12a3fdb,
     type: 3}
   m_PrefabInstance: {fileID: 1282017139}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &466420663 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5249818265583449785, guid: 6f36487e68808c947b83c1dde4374bce,
+    type: 3}
+  m_PrefabInstance: {fileID: 368495746}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &495896390
 PrefabInstance:
@@ -10499,7 +10515,7 @@ PrefabInstance:
         type: 3}
       propertyPath: fadeInController
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 466420663}
     - target: {fileID: 7789334480129040415, guid: 237c806dfd1ee144f89cc45bf4be5a71,
         type: 3}
       propertyPath: m_Name
