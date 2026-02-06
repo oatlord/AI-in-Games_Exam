@@ -29,7 +29,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("References")]
     public TurnManager turnManager;
     // public GameObject victoryUI;
-    public WinManager winManager;
+    public GameObject winCanvas;
     public Node currentNode;
     public Node victoryNode;
 
@@ -200,6 +200,10 @@ public class PlayerMovement : MonoBehaviour
         transform.position = exitPos;
         yield return StartCoroutine(SquashRoutine());
 
+        if (winCanvas.activeSelf == false)
+        {
+            winCanvas.SetActive(true);
+        }
         input.Player.Disable();
     }
     IEnumerator SquashRoutine()

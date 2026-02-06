@@ -10,7 +10,7 @@ public class PauseScreen : MonoBehaviour
 
     void Start()
     {
-        SetPauseUI(false); // start hidden
+        SetPauseUI(false);
     }
 
     void Update()
