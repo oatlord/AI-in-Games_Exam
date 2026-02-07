@@ -6146,6 +6146,12 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 754800938}
   m_PrefabAsset: {fileID: 0}
+--- !u!95 &754800941 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5249818265583449785, guid: 6f36487e68808c947b83c1dde4374bce,
+    type: 3}
+  m_PrefabInstance: {fileID: 754800938}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &795994553
 GameObject:
   m_ObjectHideFlags: 0
@@ -9275,7 +9281,7 @@ PrefabInstance:
         type: 3}
       propertyPath: fadeInController
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 754800941}
     - target: {fileID: 7789334480129040415, guid: 237c806dfd1ee144f89cc45bf4be5a71,
         type: 3}
       propertyPath: m_Name
