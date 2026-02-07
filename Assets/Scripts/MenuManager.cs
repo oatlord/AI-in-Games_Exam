@@ -101,6 +101,11 @@ public class MenuManager : MonoBehaviour
         StartCoroutine(LoadLevelRoutine("Level 3"));
     }
 
+    public void ReturnToMenu()
+    {
+        StartCoroutine(LoadLevelRoutine("Menu"));
+    }
+
     private IEnumerator LoadLevelRoutine(string sceneName)
     {
         if (transitionAnimator != null)
