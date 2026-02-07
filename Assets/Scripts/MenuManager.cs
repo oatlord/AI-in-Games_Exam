@@ -1,18 +1,37 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Collections;
 
 public class MenuManager : MonoBehaviour
 {
+    public static MenuManager instance;
+
     [Header("Panels")]
     public CanvasGroup mainMenuPanel;
     public CanvasGroup settingsPanel;
     public CanvasGroup selectionPanel;
     public CanvasGroup levelSelectionPanel;
+    public Animator transitionAnimator;
+    public float transitionTime = 1f;
 
     [Header("Level Buttons")]
     public Button level2Button;
     public Button level3Button;
+
+    private void Awake()
+{
+    if (instance == null)
+        instance = this;
+    else
+        Destroy(gameObject);
+
+    if (transitionAnimator != null)
+    {
+        transitionAnimator.Play("Crossfade_End", 0, 0f);
+    }
+}
+
 
     private void Start()
     {
@@ -53,7 +72,7 @@ public class MenuManager : MonoBehaviour
 
     public void Tutorial()
     {
-        SceneManager.LoadScene("TutorialScene");
+        StartCoroutine(LoadLevelRoutine("Tutorial"));
     }
 
     public void OpenLevelSelection()
@@ -61,8 +80,6 @@ public class MenuManager : MonoBehaviour
         ShowPanel(levelSelectionPanel);
         HidePanel(selectionPanel);
     }
-
-    // LEVEL SELECTION
     public void CloseLevelSelection()
     {
         ShowPanel(selectionPanel);
@@ -71,17 +88,29 @@ public class MenuManager : MonoBehaviour
 
     public void LoadLevel1()
     {
-        SceneManager.LoadScene("Level1");
+        StartCoroutine(LoadLevelRoutine("Level 1"));
     }
 
     public void LoadLevel2()
     {
-        SceneManager.LoadScene("Level2");
+        StartCoroutine(LoadLevelRoutine("Level 2"));
     }
 
     public void LoadLevel3()
     {
-        SceneManager.LoadScene("Level3");
+        StartCoroutine(LoadLevelRoutine("Level 3"));
+    }
+
+    private IEnumerator LoadLevelRoutine(string sceneName)
+    {
+        if (transitionAnimator != null)
+        {
+            transitionAnimator.SetTrigger("Start");
+        }
+
+        yield return new WaitForSecondsRealtime(transitionTime);
+
+        SceneManager.LoadScene(sceneName);
     }
 
     // LOCK SYSTEM

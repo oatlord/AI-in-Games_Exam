@@ -2966,6 +2966,12 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 501541684}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!95 &503147740 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 2261289397936168737, guid: a72be75b84ae70f40ad1520393705498,
+    type: 3}
+  m_PrefabInstance: {fileID: 707302886}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &566505897
 GameObject:
   m_ObjectHideFlags: 0
@@ -3252,6 +3258,8 @@ MonoBehaviour:
   settingsPanel: {fileID: 623999233}
   selectionPanel: {fileID: 312580249}
   levelSelectionPanel: {fileID: 1041629527}
+  transitionAnimator: {fileID: 503147740}
+  transitionTime: 1
   level2Button: {fileID: 566505899}
   level3Button: {fileID: 1304169258}
 --- !u!1 &605437210
@@ -4183,7 +4191,7 @@ PrefabInstance:
     - target: {fileID: 7761935057295948316, guid: a72be75b84ae70f40ad1520393705498,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
