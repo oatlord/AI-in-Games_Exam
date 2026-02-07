@@ -30,6 +30,14 @@ public class LevelLoader : MonoBehaviour
         }
     }
 
+    public void BackToMenu()
+{
+    if (isLoading) return;
+
+    UndoManager.instance?.ResetUndoCount();
+    StartCoroutine(LoadMenu());
+}
+
     public void RestartLevel()
     {
         UndoManager.instance?.ResetUndoCount();
@@ -40,6 +48,20 @@ public class LevelLoader : MonoBehaviour
     {
         UndoManager.instance?.ResetUndoCount();
         StartCoroutine(LoadLevel(SceneManager.GetActiveScene().buildIndex + 1));
+    }
+
+        IEnumerator LoadMenu()
+    {
+        isLoading = true;
+
+        if (transitionAnimator != null)
+        {
+            transitionAnimator.SetTrigger("Start");
+        }
+
+        yield return new WaitForSecondsRealtime(transitionTime);
+
+        SceneManager.LoadScene("Menu");
     }
 
     IEnumerator LoadLevel(int levelIndex)

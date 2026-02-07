@@ -18,7 +18,6 @@ public class AIMovement : MonoBehaviour
     [Header("Juice Settings")]
     public float stretchAmount = 1.2f;
     public float squashAmount = 0.7f;
-    public float juiceSpeed = 15f; 
 
     [Header("Audio Settings")]
     public AudioSource audioSource;
@@ -26,11 +25,11 @@ public class AIMovement : MonoBehaviour
     public AudioClip ribbitSfx;
 
     private bool isTakingTurn = false;
-    private Node forbiddenFrom;
-    private Node forbiddenTo;
     private Vector3 originalScale;
-    int replanAttempts = 0;
-    int maxReplansPerTurn = 2;
+
+    // 🔒 Stored ONLY when last turn ended blocked
+    private Node forbiddenFrom = null;
+    private Node forbiddenTo = null;
 
     void Start()
     {
@@ -48,7 +47,9 @@ public class AIMovement : MonoBehaviour
 
         isTakingTurn = true;
 
-        // PLAN PHASE
+        // =========================
+        // PLAN PHASE (TURN START)
+        // =========================
         path = AStarManager.instance.GeneratePath(
             currentNode,
             playerScript.currentNode,
@@ -56,9 +57,15 @@ public class AIMovement : MonoBehaviour
             forbiddenTo
         );
 
+        // Once used, clear memory
+        forbiddenFrom = null;
+        forbiddenTo = null;
+
         int stepsTaken = 0;
 
-        // MOVE PHASE
+        // =========================
+        // MOVE PHASE (LOCKED)
+        // =========================
         while (stepsTaken < maxStepsPerTurn)
         {
             if (path == null || path.Count <= 1)
@@ -66,131 +73,144 @@ public class AIMovement : MonoBehaviour
 
             Node nextNode = path[1];
 
-            // Barrier Check
+            // Barrier check (NO replanning here)
             Vector3 startLine = currentNode.transform.position + Vector3.up * 0.5f;
             Vector3 endLine = nextNode.transform.position + Vector3.up * 0.5f;
 
             if (Physics.Linecast(startLine, endLine, barrierMask))
             {
+                // Remember the blocked edge for NEXT turn
                 forbiddenFrom = currentNode;
                 forbiddenTo = nextNode;
-                replanAttempts++;
 
-                if (replanAttempts >= maxReplansPerTurn)
-                {
-                    yield return StartCoroutine(FaceTargetCardinalSmooth(player.transform.position));
-                    break;
-                }
-
-                path = AStarManager.instance.GeneratePath(
-                    currentNode,
-                    playerScript.currentNode,
-                    forbiddenFrom,
-                    forbiddenTo
+                yield return StartCoroutine(
+                    FaceTargetCardinalSmooth(player.transform.position)
                 );
-
-                if (path == null || path.Count <= 1)
-                {
-                    yield return StartCoroutine(FaceTargetCardinalSmooth(player.transform.position));
-                    break;
-                }
-                continue;
+                break;
             }
 
-            // Rotation
+            // =========================
+            // ROTATION
+            // =========================
             Vector3 moveDir = (nextNode.transform.position - transform.position).normalized;
             if (moveDir != Vector3.zero)
             {
                 Quaternion targetRot = Quaternion.LookRotation(moveDir);
                 while (Quaternion.Angle(transform.rotation, targetRot) > 5f)
                 {
-                    transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
+                    transform.rotation = Quaternion.RotateTowards(
+                        transform.rotation,
+                        targetRot,
+                        rotationSpeed * Time.deltaTime
+                    );
                     yield return null;
                 }
             }
 
-            if (audioSource != null && hopSfx != null)
+            if (audioSource && hopSfx)
                 audioSource.PlayOneShot(hopSfx);
 
+            // =========================
+            // HOP MOVEMENT
+            // =========================
             Vector3 startPos = transform.position;
             Vector3 targetPos = nextNode.transform.position;
-            float elapsedTime = 0f;
             float duration = Vector3.Distance(startPos, targetPos) / speed;
+            float elapsed = 0f;
 
-            while (elapsedTime < duration)
+            while (elapsed < duration)
             {
-                elapsedTime += Time.deltaTime;
-                float percent = Mathf.Clamp01(elapsedTime / duration);
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
 
-                Vector3 currentPos = Vector3.Lerp(startPos, targetPos, percent);
-                float arc = hopHeight * Mathf.Sin(percent * Mathf.PI);
-                currentPos.y += arc;
-                transform.position = currentPos;
+                Vector3 pos = Vector3.Lerp(startPos, targetPos, t);
+                pos.y += hopHeight * Mathf.Sin(t * Mathf.PI);
+                transform.position = pos;
 
-                float sY = originalScale.y + (Mathf.Sin(percent * Mathf.PI) * (stretchAmount - 1f));
-                float sXZ = originalScale.x - (Mathf.Sin(percent * Mathf.PI) * 0.1f);
-                transform.localScale = new Vector3(sXZ, sY, sXZ);
+                float stretch = Mathf.Sin(t * Mathf.PI);
+                transform.localScale = new Vector3(
+                    originalScale.x - stretch * 0.1f,
+                    originalScale.y + stretch * (stretchAmount - 1f),
+                    originalScale.z - stretch * 0.1f
+                );
 
                 yield return null;
             }
 
+            // =========================
+            // LAND
+            // =========================
             transform.position = targetPos;
             currentNode = nextNode;
-            forbiddenFrom = null;
-            forbiddenTo = null;
-            replanAttempts = 0;
 
-            float squashTimer = 0f;
-            float squashDuration = 0.15f; 
-            while (squashTimer < squashDuration)
+            float squashTime = 0f;
+            const float squashDuration = 0.15f;
+
+            while (squashTime < squashDuration)
             {
-                squashTimer += Time.deltaTime;
-                float t = squashTimer / squashDuration;
-                float currentSquashY = Mathf.Lerp(originalScale.y * squashAmount, originalScale.y, t);
-                transform.localScale = new Vector3(originalScale.x * stretchAmount, currentSquashY, originalScale.z * stretchAmount);
+                squashTime += Time.deltaTime;
+                float t = squashTime / squashDuration;
+
+                transform.localScale = new Vector3(
+                    originalScale.x * stretchAmount,
+                    Mathf.Lerp(originalScale.y * squashAmount, originalScale.y, t),
+                    originalScale.z * stretchAmount
+                );
+
                 yield return null;
             }
-            
+
             transform.localScale = originalScale;
-            path.RemoveAt(0); 
+
+            path.RemoveAt(0);
             stepsTaken++;
             yield return new WaitForSeconds(0.1f);
         }
 
-        if (audioSource != null && ribbitSfx != null)
+        if (audioSource && ribbitSfx)
             audioSource.PlayOneShot(ribbitSfx);
 
-        // Keep this: Needed for Undo system
-        if (UndoManager.instance != null) UndoManager.instance.RecordState();
-        
+        // Needed for Undo system
+        if (UndoManager.instance)
+            UndoManager.instance.RecordState();
+
         isTakingTurn = false;
     }
 
-    // Keep this: Needed for LoseManager to know when to start the Victory Dance
+    // Used by LoseManager
     public bool GetIsTakingTurn() => isTakingTurn;
 
     IEnumerator FaceTargetCardinalSmooth(Vector3 target)
     {
         Vector3 diff = target - transform.position;
-        Vector3 cardinalDir = (Mathf.Abs(diff.x) > Mathf.Abs(diff.z)) 
-            ? new Vector3(diff.x > 0 ? 1 : -1, 0, 0) 
-            : new Vector3(0, 0, diff.z > 0 ? 1 : -1);
+        Vector3 dir = Mathf.Abs(diff.x) > Mathf.Abs(diff.z)
+            ? new Vector3(Mathf.Sign(diff.x), 0, 0)
+            : new Vector3(0, 0, Mathf.Sign(diff.z));
 
-        Quaternion targetRot = Quaternion.LookRotation(cardinalDir);
+        Quaternion targetRot = Quaternion.LookRotation(dir);
+
         while (Quaternion.Angle(transform.rotation, targetRot) > 0.1f)
         {
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
+            transform.rotation = Quaternion.RotateTowards(
+                transform.rotation,
+                targetRot,
+                rotationSpeed * Time.deltaTime
+            );
             yield return null;
         }
+
         transform.rotation = targetRot;
     }
 
     private void OnDrawGizmos()
     {
-        if (currentNode != null && path != null && path.Count > 1)
+        if (currentNode && path != null && path.Count > 1)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawLine(currentNode.transform.position + Vector3.up * 0.5f, path[1].transform.position + Vector3.up * 0.5f);
+            Gizmos.DrawLine(
+                currentNode.transform.position + Vector3.up * 0.5f,
+                path[1].transform.position + Vector3.up * 0.5f
+            );
         }
     }
 }
