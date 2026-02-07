@@ -675,8 +675,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: 9830049745f1b14449d9fba078e1c57d, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -2037,7 +2037,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 312580245}
   m_Enabled: 1
-  m_Alpha: 0
+  m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -9666,7 +9666,6 @@ MonoBehaviour:
     m_Bits: 64
   stretchAmount: 1
   squashAmount: 0.7
-  juiceSpeed: 15
   audioSource: {fileID: 0}
   hopSfx: {fileID: 8300000, guid: 28864d31539e9f34f9e35aab0d8e85f2, type: 3}
   ribbitSfx: {fileID: 8300000, guid: 3fa6bdfe9ff8525468137b789f47e9ae, type: 3}
