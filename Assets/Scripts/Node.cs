@@ -9,7 +9,7 @@ public class Node : MonoBehaviour
 
     // public float gScore;
     // public float hScore;
-
+    public TutorialTrigger tutorialTrigger;
     public Node cameFrom;
     public List<Node> connections;
     public float gScore;
