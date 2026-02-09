@@ -10734,6 +10734,11 @@ PrefabInstance:
       propertyPath: fadeInController
       value: 
       objectReference: {fileID: 466420663}
+    - target: {fileID: 7045995379633603239, guid: 237c806dfd1ee144f89cc45bf4be5a71,
+        type: 3}
+      propertyPath: currentLevelNumber
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 7789334480129040415, guid: 237c806dfd1ee144f89cc45bf4be5a71,
         type: 3}
       propertyPath: m_Name

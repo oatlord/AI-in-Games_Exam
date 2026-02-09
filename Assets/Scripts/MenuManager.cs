@@ -20,18 +20,26 @@ public class MenuManager : MonoBehaviour
     public Button level3Button;
 
     private void Awake()
-{
-    if (instance == null)
-        instance = this;
-    else
-        Destroy(gameObject);
-
-    if (transitionAnimator != null)
     {
-        transitionAnimator.Play("Crossfade_End", 0, 0f);
-    }
-}
+        if (instance == null)
+            instance = this;
+        else
+            Destroy(gameObject);
 
+        if (transitionAnimator != null)
+            transitionAnimator.Play("Crossfade_End", 0, 0f);
+
+        // --- DEFAULT LEVEL UNLOCKS ---
+        if (!PlayerPrefs.HasKey("FirstRun"))
+        {
+            Debug.Log("First run detected. Setting default level locks.");
+            PlayerPrefs.SetInt("Level1Unlocked", 1); // Level 1 unlocked by default
+            PlayerPrefs.SetInt("Level2Unlocked", 0); // Level 2 locked
+            PlayerPrefs.SetInt("Level3Unlocked", 0); // Level 3 locked
+            PlayerPrefs.SetInt("FirstRun", 1);       // Mark first run complete
+            PlayerPrefs.Save();
+        }
+    }
 
     private void Start()
     {
@@ -43,6 +51,7 @@ public class MenuManager : MonoBehaviour
         UpdateLevelLocks();
     }
 
+    #region Button Methods
     public void StartButton()
     {
         ShowPanel(selectionPanel);
@@ -77,68 +86,65 @@ public class MenuManager : MonoBehaviour
 
     public void OpenLevelSelection()
     {
+        UpdateLevelLocks(); // refresh button states
         ShowPanel(levelSelectionPanel);
         HidePanel(selectionPanel);
     }
+
     public void CloseLevelSelection()
     {
         ShowPanel(selectionPanel);
         HidePanel(levelSelectionPanel);
     }
 
-    public void LoadLevel1()
-    {
-        StartCoroutine(LoadLevelRoutine("Level 1"));
-    }
-
-    public void LoadLevel2()
-    {
-        StartCoroutine(LoadLevelRoutine("Level 2"));
-    }
-
-    public void LoadLevel3()
-    {
-        StartCoroutine(LoadLevelRoutine("Level 3"));
-    }
-
-    public void ReturnToMenu()
-    {
-        StartCoroutine(LoadLevelRoutine("Menu"));
-    }
+    public void LoadLevel1() => StartCoroutine(LoadLevelRoutine("Level 1"));
+    public void LoadLevel2() => StartCoroutine(LoadLevelRoutine("Level 2"));
+    public void LoadLevel3() => StartCoroutine(LoadLevelRoutine("Level 3"));
+    public void ReturnToMenu() => StartCoroutine(LoadLevelRoutine("Menu"));
+    #endregion
 
     private IEnumerator LoadLevelRoutine(string sceneName)
     {
         if (transitionAnimator != null)
-        {
             transitionAnimator.SetTrigger("Start");
-        }
 
         yield return new WaitForSecondsRealtime(transitionTime);
 
         SceneManager.LoadScene(sceneName);
     }
 
-    // LOCK SYSTEM
-    void UpdateLevelLocks()
+    #region Level Unlock System
+    public void UnlockNextLevel(int completedLevel)
     {
-        bool level2Unlocked = PlayerPrefs.GetInt("Level2Unlocked", 0) == 1;
-        bool level3Unlocked = PlayerPrefs.GetInt("Level3Unlocked", 0) == 1;
+        int nextLevel = completedLevel + 1;
+        if (nextLevel > 3) return; // no level beyond 3
 
-        level2Button.interactable = level2Unlocked;
-        level3Button.interactable = level3Unlocked;
+        PlayerPrefs.SetInt("Level" + nextLevel + "Unlocked", 1);
+        PlayerPrefs.Save();
+
+        Debug.Log("Level " + nextLevel + " unlocked!");
     }
 
-    void ShowPanel(CanvasGroup panel)
+    private void UpdateLevelLocks()
+    {
+        level2Button.interactable = PlayerPrefs.GetInt("Level2Unlocked", 0) == 1;
+        level3Button.interactable = PlayerPrefs.GetInt("Level3Unlocked", 0) == 1;
+    }
+    #endregion
+
+    #region UI Helpers
+    private void ShowPanel(CanvasGroup panel)
     {
         panel.alpha = 1;
         panel.interactable = true;
         panel.blocksRaycasts = true;
     }
 
-    void HidePanel(CanvasGroup panel)
+    private void HidePanel(CanvasGroup panel)
     {
         panel.alpha = 0;
         panel.interactable = false;
         panel.blocksRaycasts = false;
     }
+    #endregion
 }

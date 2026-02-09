@@ -10977,7 +10977,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!222 &1856125096223130861
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -11155,6 +11155,11 @@ PrefabInstance:
       propertyPath: fadeInController
       value: 
       objectReference: {fileID: 3950990669731429392}
+    - target: {fileID: 7045995379633603239, guid: 237c806dfd1ee144f89cc45bf4be5a71,
+        type: 3}
+      propertyPath: currentLevelNumber
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7789334480129040415, guid: 237c806dfd1ee144f89cc45bf4be5a71,
         type: 3}
       propertyPath: m_Name
@@ -12407,7 +12412,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1811918489941341347}
   m_Enabled: 1
-  m_Alpha: 1
+  m_Alpha: 0
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0

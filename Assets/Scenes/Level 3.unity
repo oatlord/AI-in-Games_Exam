@@ -8940,6 +8940,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 205129496}
     m_Modifications:
+    - target: {fileID: 2261289397936168737, guid: a72be75b84ae70f40ad1520393705498,
+        type: 3}
+      propertyPath: m_UpdateMode
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3437989998321950200, guid: a72be75b84ae70f40ad1520393705498,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -9287,6 +9292,11 @@ PrefabInstance:
       propertyPath: fadeInController
       value: 
       objectReference: {fileID: 754800941}
+    - target: {fileID: 7045995379633603239, guid: 237c806dfd1ee144f89cc45bf4be5a71,
+        type: 3}
+      propertyPath: currentLevelNumber
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 7789334480129040415, guid: 237c806dfd1ee144f89cc45bf4be5a71,
         type: 3}
       propertyPath: m_Name
