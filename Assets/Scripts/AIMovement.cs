@@ -57,7 +57,7 @@ public class AIMovement : MonoBehaviour
             forbiddenTo
         );
 
-        // Once used, clear memory
+        // Clear stored block after using it
         forbiddenFrom = null;
         forbiddenTo = null;
 
@@ -79,7 +79,7 @@ public class AIMovement : MonoBehaviour
 
             if (Physics.Linecast(startLine, endLine, barrierMask))
             {
-                // Remember the blocked edge for NEXT turn
+                // Remember blocked edge for NEXT turn
                 forbiddenFrom = currentNode;
                 forbiddenTo = nextNode;
 
@@ -169,12 +169,18 @@ public class AIMovement : MonoBehaviour
 
         if (audioSource && ribbitSfx)
             audioSource.PlayOneShot(ribbitSfx);
-
-        // Needed for Undo system
         if (UndoManager.instance)
             UndoManager.instance.RecordState();
 
         isTakingTurn = false;
+
+        // =========================
+        // 🔔 TUTORIAL CHECK (AFTER TURN)
+        // =========================
+        if (currentNode.tutorialTrigger != null)
+        {
+            currentNode.tutorialTrigger.TriggerDialogue();
+        }
     }
 
     // Used by LoseManager

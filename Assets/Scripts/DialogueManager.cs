@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -53,4 +54,25 @@ public class DialogueManager : MonoBehaviour
         Time.timeScale = 1f; // 🔓 unfreeze game
         onDialogueEnd?.Invoke();
     }
+
+    public void StartDialogueDelayed(
+        string[] dialogueLines,
+        float delay,
+        System.Action onEnd = null
+    )
+    {
+        StartCoroutine(DialogueDelayRoutine(dialogueLines, delay, onEnd));
+    }
+
+    IEnumerator DialogueDelayRoutine(
+        string[] dialogueLines,
+        float delay,
+        System.Action onEnd
+    )
+    {
+        yield return new WaitForSeconds(delay);
+
+        StartDialogue(dialogueLines, onEnd);
+    }
+
 }

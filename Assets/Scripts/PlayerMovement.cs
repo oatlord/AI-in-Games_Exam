@@ -48,9 +48,29 @@ public class PlayerMovement : MonoBehaviour
 
     void Start()
     {
+        
         currentNode = AStarManager.instance.FindNearestNode(transform.position);
+        StartCoroutine(CheckStartingNode());
         // victoryUI.SetActive(false);
     }
+    IEnumerator CheckStartingNode()
+    {
+        // Wait for LevelLoader transition
+        while (LevelLoader.instance != null && 
+            !LevelLoader.instance.TransitionFinished)
+        {
+            yield return null;
+        }
+
+        // Small buffer so animation fully settles
+        yield return new WaitForSecondsRealtime(2.5f);
+
+        if (currentNode != null && currentNode.tutorialTrigger != null)
+        {
+            currentNode.tutorialTrigger.TryTrigger(gameObject);
+        }
+    }
+
 
     void OnEnable()
     {
@@ -157,6 +177,11 @@ public class PlayerMovement : MonoBehaviour
 
         if (turnManager)
             turnManager.EndPlayerTurn();
+
+        if (currentNode.tutorialTrigger != null)
+        {
+            currentNode.tutorialTrigger.TriggerDialogue();
+        }
     }
 
     IEnumerator AutoMoveToExit()

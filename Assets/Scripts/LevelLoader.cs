@@ -8,6 +8,8 @@ public class LevelLoader : MonoBehaviour
     public Animator transitionAnimator;
     public WinManager winManager;
     public float transitionTime = 1f;
+    public bool TransitionFinished { get; private set; } = false;
+
 
     private bool isLoading = false;
 
@@ -15,11 +17,15 @@ public class LevelLoader : MonoBehaviour
     {
         if (instance == null) instance = this;
 
+        TransitionFinished = false;
+
         if (transitionAnimator != null)
-    {
-        transitionAnimator.Play("Crossfade_End", 0, 0f);
+        {
+            transitionAnimator.Play("Crossfade_End", 0, 0f);
+            StartCoroutine(MarkTransitionFinished());
+        }
     }
-    }
+
 
     void Update()
     {
@@ -77,4 +83,11 @@ public class LevelLoader : MonoBehaviour
 
         SceneManager.LoadScene(levelIndex);
     }
+
+    IEnumerator MarkTransitionFinished()
+    {
+        yield return new WaitForSecondsRealtime(transitionTime);
+        TransitionFinished = true;
+    }
+
 }
